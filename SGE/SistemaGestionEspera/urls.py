@@ -27,4 +27,6 @@ urlpatterns = [
     url(r'^login/$', auth_views.login, {'template_name': 'login.html'}, name='login'),
     url(r'^home/$', views.home, name='home'),
     url(r'^logout/$', logout, {'template_name': 'main.html', }, name="logout"),
+    url(r'^totem/$', views.totem, name="totem"),
+    url(r'^data/$', views.data, name="data"),
 ]
