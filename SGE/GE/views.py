@@ -11,6 +11,12 @@ from django.http.response import HttpResponseRedirect
 
 from forms import SignUpForm
 
+turno = {
+        'farmacia': 0,
+        'obra_social': 0,
+        'pami': 0,
+        'particular': 0,
+}
 
 @login_required()
 def home(request):
@@ -20,6 +26,18 @@ def home(request):
 # Create your views here.
 def main(request):
     return render(request, 'main.html', {})
+
+
+def totem(request):
+    return render(request, 'totem.html', {})
+
+
+def data(request):
+    import ipdb; ipdb.set_trace()
+    if len(request.POST.values()) > 0:
+        turno[str(request.POST['turno'])] = turno[str(request.POST['turno'])] + 1
+
+    return render(request, 'totem.html', {})
 
 
 def signup(request):
