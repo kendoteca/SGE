@@ -1,0 +1,69 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat powered by Channels</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link href='https://fonts.googleapis.com/css?family=Roboto&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.4.4/babel.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react-dom.min.js"></script>
+
+     <style type="text/css">
+        .btn-xlarge {
+            padding: 18px 28px;
+            font-size: 40px;
+            font-weight: bold;
+            line-height: normal;
+            -webkit-border-radius: 8px;
+               -moz-border-radius: 8px;
+                    border-radius: 8px;
+        }
+        .btn {
+            margin-top: 10px;
+        }
+        .print-section {
+            width: 430px;
+            font-family: sans-serif;
+        }
+        .print-image .img-responsive {
+        }
+        .print-promotion {
+        }
+        .centered {
+            max-width: 386px;
+            margin: auto;
+            text-align: center;
+        }
+     </style>
+</head>
+<body style='background-color: #A9F5BC;'>
+
+    <div id='print-section'>
+        <div class='print-section'>
+            <div class='print-image'>
+                <img src="../../static/santa_ana_logo.png" class="img-responsive centered" >
+            </div>
+            <div class='print-number centered'>
+                <span style='font-family: sans-serif;'>Gracias por elegirnos!!, su turno es:</span>
+                <span id='tipo' style='font-family: sans-serif;'>afip</span>
+                <span id='turno' style='font-family: sans-serif;'>10</span>
+            </div>
+            <div class='print-promotion centered'>
+                <div>******PROMOCIÓN DEL DÍA******</div>
+                <div>Promocion 20% de descuento en productos avent</div>
+            </div>
+            <div id="bcTarget" style='margin-left: 20px'></div>
+        </div>
+    </div>
+</body>
+
+</html>

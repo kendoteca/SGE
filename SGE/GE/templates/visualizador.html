@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat powered by Channels</title>
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link href='https://fonts.googleapis.com/css?family=Roboto&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.4.4/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react-dom.min.js"></script>
+
+    <!-- <script type="text/javascript" src="{% static "/jquery-barcode.js" %}"></script>  -->
+
+    <script>
+        $(function(){
+         eval(Babel.transform($('script[type="text/babel"]').text(), {
+             presets: ['es2015', 'react', 'stage-0']
+         }).code)
+        })
+
+        function playAudio() {
+            var x = document.getElementById("timbre");
+            x.play();
+        }
+
+        function playVid() {
+            debugger
+            var vid = document.getElementById("myVideo");
+            vid.play();
+        }
+
+        function modal(e) {
+            // Get the modal
+            let data=JSON.parse(e.data).text.split(',')
+            var modal = document.getElementById('myModal');
+            let tipo;
+
+
+            if (data.length > 1 && JSON.parse(e.data).user=='visualizador') {
+                playAudio()
+
+                if(data[0]=='obra_social') {
+                    tipo = 'OBRA SOCIAL';
+
+                    $("#obra_social-numero").text(data[1]);
+                    $("#obra_social-puesto").text(data[2]);
+                }
+                else if (data[0]=='particular'){
+                    tipo = 'PARTICULAR';
+
+                    $("#particular-numero").text(data[1]);
+                    $("#particular-puesto").text(data[2]);
+                }
+                else if (data[0]=='pami'){
+                    tipo = 'PAMI';
+
+                    $("#pami-numero").text(data[1]);
+                    $("#pami-puesto").text(data[2]);
+                }
+                else if (data[0]=='perfumeria'){
+                    tipo = 'PERFUMERIA';
+
+                    $("#perfumeria-numero").text(data[1]);
+                    $("#perfumeria-puesto").text(data[2]);
+                }
+
+                $("#tipo").text(tipo);
+                $("#nros").text('Nro: ' + data[1] + '   -   Puesto: ' + data[2]);
+                modal.style.display = "block";
+                // Get the <span> element that closes the modal
+                var span = document.getElementsByClassName("close")[0];
+
+                // When the user clicks on the button, open the modal
+
+
+                // When the user clicks on <span> (x), close the modal
+                setTimeout(function() { modal.style.display = "none";}, 10000);
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+            }
+        }
+
+        function connect() {
+            let username = 'visualizador'
+            localStorage.username = username;
+
+            let socket = new WebSocket("ws://" + location.host + "/chat/main");
+            this.socket = socket;
+            socket.onmessage = (e) => {
+                modal(e)
+            }
+            socket.onopen = () => {
+                socket.send(JSON.stringify({
+                    type: 'connect',
+                    username: username
+                }))
+            }
+        }
+        connect();
+        $(window).load(function() {
+            playVid();
+        })
+     </script>
+
+    <audio id="timbre">
+        <source src="{% static "/BELL1.mp3" %}" type="audio/mpeg">
+    </audio>
+
+    <style type="text/css">
+        .btn-xlarge {
+            padding: 18px 28px;
+            font-size: 29px;
+            line-height: normal;
+            -webkit-border-radius: 8px;
+               -moz-border-radius: 8px;
+                    border-radius: 8px;
+        }
+
+                /* Modal Header */
+        .modal-header {
+            padding: 2px 16px;
+            background-color: #5cb85c;
+            color: white;
+        }
+
+        /* Modal Body */
+        .modal-body {padding: 2px 16px;}
+
+        /* Modal Footer */
+        .modal-footer {
+            padding: 2px 16px;
+            background-color: #5cb85c;
+            color: white;
+        }
+
+        /* Modal Content */
+        .modal-content {
+            position: center;
+            background-color: #fefefe;
+            margin: auto;
+            margin-top: 200px;
+            padding: 0;
+            border: 1px solid #888;
+            width: 80%;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+            -webkit-animation-name: animatetop;
+            -webkit-animation-duration: 0.4s;
+            animation-name: animatetop;
+            animation-duration: 0.4s
+        }
+
+        /* Add Animation */
+        @-webkit-keyframes animatetop {
+            from {top: -300px; opacity: 0}
+            to {top: 0; opacity: 1}
+        }
+
+        @keyframes animatetop {
+            from {top: -300px; opacity: 0}
+            to {top: 0; opacity: 1}
+        }
+
+        .text {
+          font-size:65px;
+          font-family:helvetica;
+          font-weight:bold;
+          color: black;
+          text-transform:uppercase;
+        }
+        .parpadea {
+
+          animation-name: parpadeo;
+          animation-duration: 3s;
+          animation-timing-function: linear;
+          animation-iteration-count: infinite;
+
+          -webkit-animation-name:parpadeo;
+          -webkit-animation-duration: 3s;
+          -webkit-animation-timing-function: linear;
+          -webkit-animation-iteration-count: infinite;
+        }
+
+        @-moz-keyframes parpadeo{
+          0% { opacity: 1.0; }
+          50% { opacity: 0.0; }
+          100% { opacity: 1.0; }
+        }
+
+        @-webkit-keyframes parpadeo {
+          0% { opacity: 1.0; }
+          50% { opacity: 0.0; }
+           100% { opacity: 1.0; }
+        }
+
+        @keyframes parpadeo {
+          0% { opacity: 1.0; }
+           50% { opacity: 0.0; }
+          100% { opacity: 1.0; }
+        }
+    </style>
+
+</head>
+<body style='background-color: #A9F5BC'>
+    <div class='container' style='margin-top: 100px;'>
+        <div class='row'>
+            <img src="{% static "/santa_ana.png" %}" class="img-responsive" alt="Cinque Terre">
+        </div>
+        <div class='row' style='height: 300px; text-align: center'>
+            <div class='col-md-6' style='background-color: white;'>
+                <div class='row' style="background-color: #088A08; color: white;">
+                    <div class='col-md-6'>
+                        <h2>Tipo de atención</h2>
+                    </div>
+                    <div class='col-md-3'>
+                        <h2>Número</h2>
+                    </div>
+                    <div class='col-md-3'>
+                        <h2>Puesto</h2>
+                    </div>
+                </div>
+                <div class='row'>
+                    <div class='col-md-6'>
+                        <h1>PERFUMERIA</h1>
+                    </div>
+                    <div class='col-md-3'>
+                        <h1><span id='perfumeria-numero'>-</span></h1>
+                    </div>
+                    <div class='col-md-3'>
+                        <h1><span id='perfumeria-puesto'>-</span></h1>
+                    </div>
+                </div>
+                <div class='row'>
+                    <div class='col-md-6'>
+                        <h1>PARTICULAR</h1>
+                    </div>
+                    <div class='col-md-3'>
+                        <h1><span id='particular-numero'>-</span></h1>
+                    </div>
+                    <div class='col-md-3'>
+                        <h1><span id='particular-puesto'>-</span></h1>
+                    </div>
+                </div>
+                <div class='row'>
+                    <div class='col-md-6'>
+                        <h1>PAMI</h1>
+                    </div>
+                    <div class='col-md-3'>
+                        <h1><span id='pami-numero'>-</span></h1>
+                    </div>
+                    <div class='col-md-3'>
+                        <h1><span id='pami-puesto'>-</span></h1>
+                    </div>
+                </div>
+                <div class='row'>
+                    <div class='col-md-6'>
+                        <h1>OBRA SOCIAL</h1>
+                    </div>
+                    <div class='col-md-3'>
+                        <h1><span id='obra_social-numero'>-</span></h1>
+                    </div>
+                    <div class='col-md-3'>
+                        <h1><span id='obra_social-puesto'>-</span></h1>
+                    </div>
+                </div>
+
+            </div>
+            <div class='col-md-6'>
+                <video id="myVideo" width="550" height="340">
+                    <source src="{% static "/video.mp4" %}" type="video/mp4">
+                </video>
+            </div>
+        </div>
+        <div class='row' style="margin-top: 10px; background-color: #088A08;">Derechos reservados.</div>
+    </div>
+    <div id="app" class='container' style='border-radius: 20px; background-color: #A9D0F5; margin-top: 60px;'>
+    </div>
+
+   <div id="myModal" class="modal" style="display: none;">
+
+      <!-- Modal content -->
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="close">×</span>
+          <h2>Su atención Por Favor</h2>
+        </div>
+        <div class="modal-body">
+          <h1 align='center'><span id='tipo' class="parpadea text">-</span></h1>
+          <h1 align='center'><span id='nros' class="parpadea text">-</span></h1>
+        </div>
+        <div class="modal-footer">
+          <h3><p>Aguarde, en un Instante lo llamaremos!.</p></h3>
+        </div>
+      </div>
+
+    </div>
+
+    </body>
+</html>
+
+{% endblock %}

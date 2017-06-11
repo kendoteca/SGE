@@ -1,4 +1,6 @@
-
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -12,32 +14,420 @@
 
     <title>Sistema de Gestion de Tiempo</title>
 
-    <!-- Bootstrap core CSS -->
-    <!-- Latest compiled and minified CSS -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.4.4/babel.min.js"></script>
+    <script src="{% static "/jquery.timer.js" %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react-dom.min.js"></script>
 
-	<!-- Optional theme -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <style type="text/css">
+         /* The Modal (background) */
+        .modal {
+            display: none; /* Hidden by default */
+            left: 0;
+            top: 0;
+            width: 100%%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        /* Modal Content/Box */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 40%; /* Could be more or less, depending on screen size */
+        }
 
-	<!-- Latest compiled and minified JavaScript -->
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
 
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+		$(function(){
+		 eval(Babel.transform($('script[type="text/babel"]').text(), {
+		     presets: ['es2015', 'react', 'stage-0']
+		 }).code)
+		})
+
+        var ore = 0, minuti = 0, secondi = 0, decimi = 0;
+        var vis = "";
+        var stop = true;
+
+        let puesto = {{puesto}}
+        var state;
+
+        function start(value) {
+            if(stop == true) {
+                stop = false;
+                cronometro(value);
+            }
+        }
+
+        function cronometro(value) {
+            if(stop == false) {
+                decimi++;
+                if(decimi > 9) {
+                    decimi = 0;
+                    secondi++;
+                }
+                if(secondi > 59) {
+                    secondi = 0;
+                    minuti++;
+                }
+                if(minuti > 59) {
+                    minuti = 0;
+                    ore++;
+                }
+                mostra(value);
+                setTimeout("cronometro('"+value+"')", 100);
+            }
+        }
+        function mostra(value) {
+            if(ore < 10) vis = "0"; else vis = ore;
+            if(minuti < 10) vis = vis + "0";
+            vis = vis + minuti + ":";
+            if(secondi < 10) vis = vis + "0";
+            vis = vis + secondi + ":" + decimi;
+
+            document.getElementById("contador-"+value).innerHTML = vis;
+        }
+        function stop_timmer() {
+            stop = true;
+        }
+        function end(value) {
+            if(stop == false) {
+                stop = true;
+            }
+            ore = minuti = secondi = decimi = 0;
+            vis = "";
+            mostra(value);
+        }
+
+		connection()
+
+        var tiempo_pami = 0;
+        var tiempo_particular = 0
+        var tiempo_obra_social = 0
+        var tiempo_perfumeria = 0
+        var terminar = true;
+        var numero_llamado;
+        var numero_atencion_prioritaria = 0;
+        var numero_atencion_booleano = false;
+        var pinNumber;
+
+		function send(e) {
+
+            if (terminar) {
+                // contador(e);
+                start(e.value)
+                $('#atender_'+e.value).replaceWith('<button type="button" id="atender_'+e.value+'" onclick="send(this)" value="'+e.value+'" class="btn btn-danger btn-sm">Terminar</button>')
+                terminar = false;
+
+                // Envia mensaje y crea el registro
+                let text = e.value;
+
+                if (text == "") {
+                    return
+                }
+
+                var message = {
+                    type: 'message',
+                    text: text,
+                    user: 'atencion',
+                    pin: pinNumber,
+                    atencion_prioritaria_booleano: numero_atencion_booleano,
+                    numero_atencion: numero_atencion_prioritaria,
+                    puesto: puesto
+                }
+                // send message
+                this.socket.send(JSON.stringify(message));
+
+                // mensaje para las pantallas
+
+                message = {
+                    type: 'message',
+                    text: text,
+                    user: 'cantidad',
+                    puesto: puesto
+                }
+                // send message
+                this.socket.send(JSON.stringify(message));
+            }
+            else {
+                $('#atender_'+e.value).replaceWith('<button type="button" id="atender_'+e.value+'" onclick="showPinModal(this)" value="'+e.value+'" class="btn btn-primary btn-sm">LLamar y Atender</button>')
+                stop_timmer();
+
+                if(e.value=='obra_social') {
+                    tiempo_obra_social = tiempo_obra_social+secondi+(minuti*60)
+                }
+                if (e.value=='particular') {
+                    tiempo_particular = tiempo_particular+secondi+(minuti*60)
+                }
+                if (e.value=='pami'){
+                    tiempo_pami = tiempo_pami+secondi+(minuti*60)
+                }
+                if (e.value=='perfumeria'){
+                    tiempo_perfumeria = tiempo_perfumeria+secondi+(minuti*60)
+                }
+                end(e.value);
+                terminar = true;
+
+                // Envia mensaje y crea el registro
+                let text = e.value;
+                let observaciones = document.getElementById("observaciones").value || '';
+
+                if (text == "") {
+                    return
+                }
+                let message = {
+                    type: 'message',
+                    text: text,
+                    user: 'update',
+                    puesto: puesto,
+                    observaciones: observaciones,
+                    atencion_prioritaria_booleano: numero_atencion_booleano,
+                    numero_atencion: numero_atencion_prioritaria,
+                }
+                if (!numero_atencion_booleano) {
+                    message['numero'] = numero_llamado[1]
+                    message['tipo'] = numero_llamado[0]
+                }
+                else {
+                    message['numero'] = numero_atencion_prioritaria
+                    message['tipo'] = e.value
+                }
+
+                // send message
+                this.socket.send(JSON.stringify(message));
+                numero_atencion_booleano = false;
+            }
+        }
+
+        function sendVisualizador(e) {
+            let text = e.value;
+
+            if (text == "") {
+                return
+            }
+
+            let message = {
+                type: 'message',
+                text: text,
+                user: 'visualizador',
+                puesto: puesto
+            }
+            // send message
+            this.socket.send(JSON.stringify(message));
+        }
+
+		function connection() {
+			let username = 'atencion'
+            localStorage.username = username;
+
+            let socket = new WebSocket("ws://" + location.host + "/chat/main");
+            this.socket = socket;
+            socket.onmessage = (e) => {
+                var data=JSON.parse(e.data).text.split(',')
+                var user=JSON.parse(e.data).user
+                var sender=data[0]
+                if (data.length > 1 && user=='totem') {
+                    if(data[0]=='obra_social') {
+                        numero = parseInt($('#obra_social_numero').html())
+                        $('#obra_social_numero').html(numero+1);
+                    }
+                    else if (data[0]=='particular'){
+                       numero = parseInt($('#particular_numero').html())
+                        $('#particular_numero').html(numero+1);
+                    }
+                    else if (data[0]=='pami'){
+                        numero = parseInt($('#pami_numero').html())
+                        $('#pami_numero').html(numero+1);
+                    }
+                    else if (data[0]=='perfumeria'){
+                        numero = parseInt($('#perfumeria_numero').html())
+                        $('#perfumeria_numero').html(numero+1);
+                    }
+                }
+                else if (data.length > 1 && sender=='cantidad') {
+                	if(data[1]=='obra_social') {
+                        numero = parseInt($('#obra_social_numero').html())
+                		$('#obra_social_numero').html(numero-1);
+                	}
+                	else if (data[1]=='particular'){
+                        numero = parseInt($('#particular_numero').html())
+                		$('#particular_numero').html(numero-1);
+                	}
+                	else if (data[1]=='pami'){
+                        numero = parseInt($('#pami_numero').html())
+                		$('#pami_numero').html(numero-1);
+                	}
+                	else if (data[1]=='perfumeria'){
+                        numero = parseInt($('#perfumeria_numero').html())
+                		$('#perfumeria_numero').html(numero-1);
+                	}
+                }
+
+                if(user=='visualizador') {
+                    numero_llamado = data
+                }
+
+        	}
+            socket.onopen = () => {
+                socket.send(JSON.stringify({
+                    type: 'connect',
+                    username: username
+                }))
+            }
+		}
+
+        // Modal
+
+        // Get the <span> element that closes the modal
+        // var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks on the button, open the modal
+        var atencion_prioritaria_id = '';
+        function showModal(values) {
+             // Get the modal
+            var modal = document.getElementById('myModal');
+            atencion_prioritaria_id = values.value;
+
+            debugger
+            modal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        function closePinModal() {
+             // Get the modal
+            var modal = document.getElementById('pinModal');
+            modal.style.display = "none";
+        }
+
+        function showPinModal(values) {
+             // Get the modal
+            var modal = document.getElementById('pinModal');
+            // atencion_prioritaria_id = values.value;
+            modal.style.display = "block";
+
+            //guardo el boton que lo llamo con sus valores
+            state = values;
+
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        function closeModal() {
+             // Get the modal
+            var modal = document.getElementById('myModal');
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            var modal = document.getElementById('myModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        var isPinGood;
+        function checkPin(){
+
+            pin_number = document.getElementById('pin_number').value
+            $.getJSON(
+                'http://'+location.host+'/api/user_pin/'+pin_number+'/ ',
+                function(response){
+                    isPinGood=response
+                    pinNumber = pin_number
+                    if (state.id.indexOf('atencion') != 0 && isPinGood) {
+                        sendVisualizador(state);
+                        send(state);
+                        closePinModal()
+                    }
+                    else if (state.id.indexOf('atencion') >= 0 && isPinGood){
+                        closePinModal()
+                        showModal(state)
+                    }
+                },
+                function(response) {
+                // callback error
+                }
+            )
+
+        }
+
+        function atencion_prioritaria(value) {
+            numero_atencion_prioritaria = document.getElementById('numero_prioritario').value;
+            numero_atencion_booleano = true;
+            value.value = atencion_prioritaria_id
+             // Success Function
+
+            closeModal()
+            send(value);
+        }
+
+
+     </script>
+
   </head>
 
   <body>
 
+    <div id="myModal" class="modal">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" onclick="closeModal()" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Atención Prioritaria</h4>
+            </div>
+            <div class="modal-body">
+                <p style="align-content: center;">Ingrese el número del Cliente:</p>
+                <input type='number' id='numero_prioritario' style="align-content: center;">
+            </div>
+            <div class="modal-footer" style="align-content: center;">
+                <button type="button" onclick="atencion_prioritaria(this)" id='aceptar_atencion' class="btn btn-default">Aceptar</button>
+                <button type="button" onclick="closeModal()" id='cancelar-atencion-prioritaria' class="btn btn-default">Cancelar</button>
+            </div>
+        </div>
+
+    </div>
+    <div id="pinModal" class="modal">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" onclick="closePinModal()" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Ingreso de pin</h4>
+            </div>
+            <div class="modal-body">
+                <p style="align-content: center;">Ingrese su pin personal:</p>
+                <input type='number' id='pin_number' style="align-content: center;">
+            </div>
+            <div class="modal-footer" style="align-content: center;">
+                <button type="button" onclick="checkPin(this)" id='aceptar_pin' class="btn btn-default">Aceptar</button>
+                <button type="button" onclick="closePinModal()" id='cancelar-atencion-prioritaria' class="btn btn-default">Cancelar</button>
+            </div>
+        </div>
+
+    </div>
     <div class="container">
       <div class="header clearfix">
         <nav>
           <ul class="nav nav-pills pull-right">
             <li role="presentation" class="active"><a href="#">Home</a></li>
-            <li role="presentation"><a href="#">About</a></li>
-            <li role="presentation"><a href="#">Contact</a></li>
+            <li role="presentation"><a href={% url 'logout' %}>Cerrar Sesion</a></li>
           </ul>
         </nav>
         <h3 class="text-muted">Sistema de Gestión de Espera</h3>
@@ -45,15 +435,13 @@
 
       <div>
         <h4>Sistema de Atención al Cliente</h4>
+      	<form action="{% url 'home' %}" method="post">
       	<div class="row" align="center">
 	        <div class="col-lg-2" style="border: black light solid; box-shadow: 5px 5px 3px #DADEDD; border-radius: 10px; background-color: #E3F6CE">
 				<div>
-					<h3>Caja:</h3>
-					<h2>1234</h2>
-				</div>
-	         	<div>
-  					<h3>Turno:</h3>
-					<h2>1234</h2>
+					<h3>Puesto:</h3>
+                    <h2 align="center">{{puesto}}</h2>
+
 				</div>
 	        </div>
 	        <div class="col-lg-2 text-center" style="border: #cdcdcd medium solid; background-color: #cdcdcd; margin-left: 30px" >
@@ -62,16 +450,19 @@
 	        	</div>
 
 	        	<div style="border: #cdcdcd medium solid; margin-top: 2px; border-radius: 15px; background-color: white" class='text-center'>
-	        		<label for="name"><h3>123</h3></label>
+	        		<label for="name"><h3><div id="particular_numero">{{particular_quantity}}</div></h3></label>
 	        	</div>
 
-	        	<div style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
-	        		Demora Promedio 4,5min
+                <div style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+                    Demora Promedio {{promedio_particular}}min
+                </div>
+	        	<div id='contador-particular' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
 	        	</div>
 
 	        	<div class="btn-group-vertical text-center" role="group" style="margin-top: 10px; margin-bottom: 20px;">
-	        		<button type="button" class="btn btn-success btn-sm">Atender</button>
-	        		<button type="button" class="btn btn-warning btn-sm">Atencion Prioritaria</button>
+                    <button type="button" onclick="showPinModal(this)" id='atender_particular' value='particular' class="btn btn-primary btn-sm">LLamar y Atender</button>
+	        		<!-- <button type="button" onclick="send(this)" id='atender_particular' value='particular' class="btn btn-success btn-sm">Atender</button> -->
+	        		<button type="button" onclick="showPinModal(this)" id="atencion-particular" value="particular" class="btn btn-warning btn-sm">Atencion Prioritaria</button>
 	        	</div>
 	        </div>
 	        <div class="col-lg-2 text-center" style="border: #cdcdcd medium solid; background-color: #cdcdcd">
@@ -80,16 +471,19 @@
 	        	</div>
 
 	        	<div style="border: #cdcdcd medium solid; margin-top: 2px; border-radius: 15px; background-color: white" class='text-center'>
-	        		<label for="name"><h3>123</h3></label>
+	        		<label for="name"><h3><div id="obra_social_numero">{{obra_social_quantity}}</div></h3></label>
 	        	</div>
 
-	        	<div style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
-	        		Demora Promedio 4,5min
+                <div style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+                    Demora Promedio {{promedio_obra_social}}min
+                </div>
+	        	<div id='contador-obra_social' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
 	        	</div>
 
 	        	<div class="btn-group-vertical text-center" role="group" style="margin-top: 10px; margin-bottom: 20px;">
-	        		<button type="button" class="btn btn-success btn-sm">Atender</button>
-	        		<button type="button" class="btn btn-warning btn-sm">Atencion Prioritaria</button>
+                    <button type="button" onclick="showPinModal(this)" id='atender_obra_social' value='obra_social' class="btn btn-primary btn-sm">LLamar y Atender</button>
+	        		<!-- <button type="button" onclick="send(this)" id='atender_obra_social' value='obra_social' class="btn btn-success btn-sm">Atender</button> -->
+	        		<button type="button" onclick="showPinModal(this)" id="atencion_obra_social" value="obra_social" class="btn btn-warning btn-sm">Atencion Prioritaria</button>
 	        	</div>
 	        </div>
 	        <div class="col-lg-2 text-center" style="border: #cdcdcd medium solid; background-color: #cdcdcd">
@@ -98,16 +492,20 @@
 	        	</div>
 
 	        	<div style="border: #cdcdcd medium solid; margin-top: 2px; border-radius: 15px; background-color: white" class='text-center'>
-	        		<label for="name"><h3>123</h3></label>
+	        		<label for="name"><h3><div id="pami_numero">{{pami_quantity}}</div></h3></label>
 	        	</div>
 
-	        	<div style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
-	        		Demora Promedio 4,5min
+                <div style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+                    Demora Promedio {{promedio_pami}}min
+                </div>
+	        	<div id='contador-pami' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+
 	        	</div>
 
 	        	<div class="btn-group-vertical text-center" role="group" style="margin-top: 10px; margin-bottom: 20px;">
-	        		<button type="button" class="btn btn-success btn-sm">Atender</button>
-	        		<button type="button" class="btn btn-warning btn-sm">Atencion Prioritaria</button>
+                    <button type="button" onclick="showPinModal(this)" id='atender_pami' value='pami' class="btn btn-primary btn-sm">LLamar y Atender</button>
+	        		<!-- <button type="button" onclick="send(this)" id='atender_pami' value='pami' class="btn btn-success btn-sm">Atender</button> -->
+	        		<button type="button" onclick="showPinModal(this)" id="atencion_pami" value="pami" class="btn btn-warning btn-sm">Atencion Prioritaria</button>
 	        	</div>
 	        </div>
 	        <div class="col-lg-2 text-center" style="border: #cdcdcd medium solid; background-color: #cdcdcd">
@@ -116,16 +514,20 @@
 	        	</div>
 
 	        	<div style="border: #cdcdcd medium solid; margin-top: 2px; border-radius: 15px; background-color: white" class='text-center'>
-	        		<label for="name"><h3>123</h3></label>
+	        		<label for="name"><h3><div id="perfumeria_numero">{{perfumeria_quantity}}</div></h3></label>
 	        	</div>
 
-	        	<div style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
-	        		Demora Promedio 4,5min
-	        	</div>
+                <div style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+                    Demora Promedio {{promedio_farmacia}}min
+                </div>
+	        	<div id='contador-perfumeria' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+
+                </div>
 
 	        	<div class="btn-group-vertical text-center" role="group" style="margin-top: 10px; margin-bottom: 20px;">
-	        		<button type="button" class="btn btn-success btn-sm">Atender</button>
-	        		<button type="button" class="btn btn-warning btn-sm">Atencion Prioritaria</button>
+                    <button type="button" onclick="showPinModal(this)" id='atender_perfumeria' value='perfumeria' class="btn btn-primary btn-sm">LLamar y Atender</button>
+	        		<!-- <button type="button" onclick="send(this)" id='atender_perfumeria' value='perfumeria' class="btn btn-success btn-sm">Atender</button> -->
+	        		<button type="button" onclick="showPinModal(this)" id="atencion_perfumeria" value="perfumeria" class="btn btn-warning btn-sm">Atencion Prioritaria</button>
 	        	</div>
 	        </div>
 	    </div>
@@ -133,12 +535,14 @@
       <div class="row" style="margin-top: 20px;">
         <div class="col-md-8 col-md-offset-1" style="">
           <h4>Observaciones</h4>
-          <textarea class="form-control" rows="4" placeholder="Observaciones" style="margin-left: 30px"></textarea>
+          <textarea class="form-control" rows="4" id='observaciones' placeholder="Observaciones" style="margin-left: 30px"></textarea>
         </div>
       </div>
+      </form>
+
 
 <!--       <footer class="footer">
-        <p>&copy; 2016 Company, Inc.</p>
+        <p>&copy; Hecho por Pablo Ovejero en asosiacion con Mario Reale</p>
       </footer> -->
 
     </div> <!-- /container -->
@@ -148,3 +552,4 @@
     <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
   </body>
 </html>
+{% endblock %}

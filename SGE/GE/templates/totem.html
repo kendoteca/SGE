@@ -1,22 +1,210 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load static %}
 
-    <form method="post" action="{% url 'data' %}">
- 
-        {% csrf_token %}
- 
-        <table>
-            <tr>
-                <td>Algo</td>
-                <td><input type="radio" name='turno' value="obra_social"/>Farmacia</td>
-                <td><input type="radio" name='turno' value="farmacia"/>Obra Social</td>
-                <td><input type="radio" name='turno' value="pami"/>PAMI</td>
-                <td><input type="radio" name='turno' value="particular"/>Particular</td>
-            </tr>
- 
-        </table>
- 
-        <input type="submit" value="totem"/>
-    </form>
- 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat powered by Channels</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link href='https://fonts.googleapis.com/css?family=Roboto&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.4.4/babel.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react-dom.min.js"></script>
+    <script type="text/javascript" src="{% static "/jquery-barcode.js" %}"></script>
+
+    <script>
+        $(function(){
+         eval(Babel.transform($('script[type="text/babel"]').text(), {
+             presets: ['es2015', 'react', 'stage-0']
+         }).code)
+        })
+
+        function printbox() {
+            var content = $('#print-section').html();
+            var printWindow = '<html><head><title>my div</title></head><body>'+ content +'</body></html>';
+            mywindow = window.open(' ', 'print div', 'height=300,width=600');
+            mywindow.document.write(printWindow);
+
+            setTimeout(function(){ mywindow.print() }, 100);
+            setTimeout(function(){ mywindow.close() }, 100);
+            return true;
+        }
+
+        $(window).load(function() {
+            $('#print-section').hide()
+        })
+    </script>
+
+     <style type="text/css">
+        .btn-xlarge {
+            padding: 18px 28px;
+            font-size: 40px;
+            font-weight: bold;
+            line-height: normal;
+            -webkit-border-radius: 8px;
+               -moz-border-radius: 8px;
+                    border-radius: 8px;
+        }
+        .btn {
+            margin-top: 10px;
+        }
+     </style>
+</head>
+<body style='background-color: #A9F5BC;'>
+
+    <div id='print-section'>
+        <style type="text/css">
+            .print-section {
+                width: 430px;
+                font-family: sans-serif;
+            }
+            .print-image .img-responsive {
+            }
+            .print-promotion {
+            }
+            .centered {
+                max-width: 386px;
+                margin: auto;
+                text-align: center;
+            }
+        </style>
+        <div class='print-section'>
+            <div class='print-image centered'>
+                <img src="{% static "/santa_ana_logo.png" %}" class="img-responsive centered" >
+            </div>
+            <div class='print-number centered'>
+                <span>¡¡Gracias por elegirnos!!</span>
+                <div class='print-number-type' id='tipo' ></div>
+                <div class='print-number-turn' id='turno'></div>
+            </div>
+            <div class='print-promotion centered'>
+                <div><b>******PROMOCIÓN DEL DÍA******</b></div>
+                <div><b>Promocion 20% de descuento en productos avent</b></div>
+            </div>
+            <div id="bcTarget" class='centered'></div>
+        </div>
+    </div>
+
+    <img src="{% static "/santa_ana.png" %}" class="img-responsive" alt="Cinque Terre">
+    <label><h2><b>Seleccione una Opción para  ser atendido:</b></h2></label>
+
+    <div id="app" style='box-shadow: 10px 10px 10px; background-color: #088A08; margin-top: 40px;'>
+    </div>
+
+    <script type="text/babel">
+        class Message extends React.Component {
+            constructor(props){
+                super(props);// prints out whatever is inside props
+                this.connect()
+            }
+            connect() {
+
+                let username = 'totem'
+                this.setState({username: username})
+                localStorage.username = username;
+
+                let socket = new WebSocket("ws://" + location.host + "/chat/main");
+                this.socket = socket;
+                socket.onmessage = (e) => {
+                    var data=JSON.parse(e.data).text.split(',')
+                    let user=JSON.parse(e.data).user
+                    $("#turno").html('<h1>Nº: '+ data[1] + '</h1>');
+                    if (data.length > 1 && user=='totem') {
+                        if(data[0]=='obra_social') {
+                            $('#tipo').html('<h2>OBRA SOCIAL</h2>');
+                            data[0]=1
+                        }
+                        else if (data[0]=='particular'){
+                            $('#tipo').html('<h2>PARTICULAR</h2>');
+                            data[0]=4
+                        }
+                        else if (data[0]=='pami'){
+                            $('#tipo').html('<h2>PAMI</h2>');
+                            data[0]=2
+                        }
+                        else if (data[0]=='perfumeria'){
+                            $('#tipo').html('<h2>PERFUMERIA</h2>');
+                            data[0]=3
+                        }
+
+                    $("#bcTarget").barcode(
+                            data[0] + '.' + data[1],
+                            "code128",
+                            {
+                              'barWidth': 4,
+                              'barHeight': 50,
+                              'color': 'black',
+                              'bgColor': '#ffffff',
+                              'showHRI': false,
+                             }
+                        );
+
+                    printbox()
+                    }
+
+
+                }
+                socket.onopen = () => {
+                    socket.send(JSON.stringify({
+                        type: 'connect',
+                        username: username
+                    }))
+                    this.setState({online: true})
+                }
+            }
+
+            onMessage(e) {
+                let text = e.target.value;
+
+                if (text == "") {
+                    return
+                }
+
+                let message = {
+                    type: 'message',
+                    text: text,
+                    user: 'totem'
+                }
+                // send message
+                this.socket.send(JSON.stringify(message));
+            }
+            render() {
+                return (
+                    <div>
+                        <button type="button" className="btn btn-default btn-lg btn-block btn-xlarge" onClick={this.onMessage.bind(this)} value='obra_social'>
+                            OBRA SOCIAL
+                        </button>
+                        <br />
+                        <button type="button" className="btn btn-default btn-lg btn-block btn-xlarge" onClick={this.onMessage.bind(this)} value='pami'>
+                            PAMI
+                        </button>
+                        <br />
+                        <button type="button" className="btn btn-default btn-lg btn-block btn-xlarge" onClick={this.onMessage.bind(this)} value='perfumeria'>
+                            PERFUMERIA
+                        </button>
+                        <br />
+                        <button type="button" className="btn btn-default btn-lg btn-block btn-xlarge" onClick={this.onMessage.bind(this)} value='particular'>
+                            PARTICULAR
+                        </button>
+                    </div>
+                )
+            }
+        }
+
+        ReactDOM.render(<Message />, document.getElementById('app'))
+    </script>
+
+    </body>
+</html>
+
 {% endblock %}

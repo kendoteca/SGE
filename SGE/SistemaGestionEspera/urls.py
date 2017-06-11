@@ -13,20 +13,29 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib import admin
-from django.contrib.auth.views import login, logout
-from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
 
 from GE import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^$', views.main, name='main'),
+    url(r'^$', views.login, name='login'),
     url(r'^signup/$', views.signup, name='signup'),
-    url(r'^login/$', auth_views.login, {'template_name': 'login.html'}, name='login'),
+    url(r'^login/$', views.login, name='login'),
     url(r'^home/$', views.home, name='home'),
-    url(r'^logout/$', logout, {'template_name': 'main.html', }, name="logout"),
+    url(r'^logout/$', views.logout, name="logout"),
     url(r'^totem/$', views.totem, name="totem"),
+    url(r'^visualizador/$', views.visualizador, name="visualizador"),
     url(r'^data/$', views.data, name="data"),
-]
+    url(r'^configurations/$', views.configurations, name="configurations"),
+    url(r'^final/$', views.final, name="final"),
+    url(r'^chat/$', views.chat, name='chat'),
+    url(r'^menu/$', views.menu, name='menu'),
+    url(r'^registros/$', views.registros, name='registros'),
+    url(r'^alertas/$', views.menu, name='alertas'),
+    url(r'^personas/$', views.menu, name='personas'),
+    url(r'^api/', include('GE.api_service.api_urls')),
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

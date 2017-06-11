@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+<script type="text/javascript">
+  function prueba() {
+    debugger
+    $.ajax({
+      type: "POST",
+      url: 'http://'+location.host+'/api/snippets/',
+      data: {'data': 'uno', 'otro': 'nada'},
+      success: console.log('hola'),
+      dataType: console.log('nada')
+    });
+  }
+
+</script>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <input type="submit" name="hoal">
+        </div>
+        <div class="col">
+          <input type="submit" name="hoal">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+         <input type="submit" name="hoal">
+        </div>
+        <div class="col">
+          <input type="submit" name="hoal">
+        </div>
+        <div class="col">
+          <input type="submit" name="hoal">
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
- 
+
     {% if form.errors %}
         <p>{{ form.errors }}</p>
     {% endif %}
- 
-    <form method="post" action="{% url 'signup' %}">
- 
+
+<!--     <form method="post" action="{% url 'signup' %}">
+
         {% csrf_token %}
- 
+
         <table>
             <tr>
                 <td>{{ form.username.label_tag }}</td>
@@ -18,25 +18,124 @@
                 <td>{{ form.password.label_tag }}</td>
                 <td>{{ form.password }}</td>
             </tr>
- 
+
             <tr>
                 <td>{{ form.email.label_tag }}</td>
                 <td>{{ form.email }}</td>
             </tr>
- 
+
             <tr>
                 <td>{{ form.first_name.label_tag }}</td>
                 <td>{{ form.first_name }}</td>
             </tr>
- 
+
             <tr>
                 <td>{{ form.last_name.label_tag }}</td>
                 <td>{{ form.last_name }}</td>
             </tr>
- 
+
         </table>
- 
+
         <input type="submit" value="login"/>
-    </form>
- 
+    </form> -->
+
+ <style type="text/css">
+    .form-signin
+{
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
+}
+.form-signin .form-signin-heading, .form-signin .checkbox
+{
+    margin-bottom: 10px;
+}
+.form-signin .checkbox
+{
+    font-weight: normal;
+}
+.form-signin .form-control
+{
+    position: relative;
+    font-size: 16px;
+    height: auto;
+    padding: 10px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.form-signin .form-control:focus
+{
+    z-index: 2;
+}
+.form-signin input[type="text"]
+{
+    margin-bottom: -1px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.form-signin input[type="password"]
+{
+    margin-bottom: 10px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+.account-wall
+{
+    margin-top: 20px;
+    padding: 40px 0px 20px 0px;
+    background-color: #f7f7f7;
+    -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+}
+.login-title
+{
+    color: #555;
+    font-size: 18px;
+    font-weight: 400;
+    display: block;
+}
+.profile-img
+{
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 10px;
+    display: block;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    border-radius: 50%;
+}
+.need-help
+{
+    margin-top: 10px;
+}
+.new-account
+{
+    display: block;
+    margin-top: 10px;
+}
+</style>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6 col-md-4 col-md-offset-4">
+            <h1 class="text-center login-title">Sistema de Gestión de Espera</h1>
+            <div class="account-wall">
+                <h2 class="text-center login-title">Creacion de Usuario</h2>
+                <img class="profile-img" src="http://img.freepik.com/iconos-gratis/silueta-usuario-masculino_318-35708.jpg?size=120&ext=jpg"
+                    alt="">
+                <form class="form-signin" method='POST' action="{% url 'signup' %}">
+                    <input type="text" class="form-control" name='username' placeholder="Ingrese un nombre de Usuario" required autofocus>
+                    <input type="password" class="form-control" name='password' placeholder="Ingrese una Contraseña" required>
+                    <input type="text" class="form-control" name='email_address' placeholder="Email" required autofocus>
+                    <input type="text" class="form-control" name='first_name' placeholder="Nombre" required autofocus>
+                    <input type="text" class="form-control" name='last_name' placeholder="Apellido" required autofocus>
+                    <button class="btn btn-lg btn-primary btn-block" type="submit">Crear Usuario</button>
+                    <a href="#" class="pull-right need-help">Necesita Ayuda?</a><span class="clearfix"></span>
+                    <a href="{% url 'login' %}" class="text-center new-account"><b>Iniciar Sesion</b></a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
