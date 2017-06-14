@@ -40,7 +40,130 @@
             return true;
         }
 
+        function createBarCode(numeroTurno, tipoTurno) {
+
+                $("#bcTarget").barcode(
+                    tipoTurno + '.' + numeroTurno,
+                    "code128",
+                    {
+                      'barWidth': 4,
+                      'barHeight': 50,
+                      'color': 'black',
+                      'bgColor': '#ffffff',
+                      'showHRI': false,
+                     }
+                );
+
+            }
+
+        function setAttentionType(typeAttention, attentionNumber) {
+                $("#turno").html('<h1>Nº: '+ attentionNumber + '</h1>');
+
+                if(typeAttention==1) {
+                    $('#tipo').html('<h2>OBRA SOCIAL</h2>');
+                }
+                else if (typeAttention==4){
+                    $('#tipo').html('<h2>PARTICULAR</h2>');
+                }
+                else if (typeAttention==2){
+                    $('#tipo').html('<h2>PAMI</h2>');
+                }
+                else if (typeAttention==3){
+                    $('#tipo').html('<h2>PERFUMERIA</h2>');
+                }
+
+            }
+
+        function connection() {
+            let username = 'totem'
+            localStorage.username = username;
+
+            let socket = new WebSocket("ws://" + location.host + "/chat/main");
+            this.socket = socket;
+            socket.onmessage = (e) => {
+                var data=JSON.parse(e.data).text.split(',')
+                var user=JSON.parse(e.data).user
+                var sender=data[0]
+                if (data.length > 1 && user=='totem') {
+                    if(data[0]=='obra_social') {
+                        numero = parseInt($('#obra_social_numero').html())
+                        $('#obra_social_numero').html(numero+1);
+                    }
+                    else if (data[0]=='particular'){
+                       numero = parseInt($('#particular_numero').html())
+                        $('#particular_numero').html(numero+1);
+                    }
+                    else if (data[0]=='pami'){
+                        numero = parseInt($('#pami_numero').html())
+                        $('#pami_numero').html(numero+1);
+                    }
+                    else if (data[0]=='perfumeria'){
+                        numero = parseInt($('#perfumeria_numero').html())
+                        $('#perfumeria_numero').html(numero+1);
+                    }
+                }
+                else if (data.length > 1 && sender=='cantidad') {
+                    if(data[1]=='obra_social') {
+                        numero = parseInt($('#obra_social_numero').html())
+                        $('#obra_social_numero').html(numero-1);
+                    }
+                    else if (data[1]=='particular'){
+                        numero = parseInt($('#particular_numero').html())
+                        $('#particular_numero').html(numero-1);
+                    }
+                    else if (data[1]=='pami'){
+                        numero = parseInt($('#pami_numero').html())
+                        $('#pami_numero').html(numero-1);
+                    }
+                    else if (data[1]=='perfumeria'){
+                        numero = parseInt($('#perfumeria_numero').html())
+                        $('#perfumeria_numero').html(numero-1);
+                    }
+                }
+
+                if(user=='visualizador') {
+                    numero_llamado = data
+                }
+
+            }
+            socket.onopen = () => {
+                socket.send(JSON.stringify({
+                    type: 'connect',
+                    username: username
+                }))
+            }
+        }
+
+        function onMessage(e) {
+                let text = e.value;
+
+                $.post(
+                    'http://'+ location.host +'/api/crear_turno/',
+                    {
+                        tipo_atencion: text
+                    },
+                    function(data, status){
+                        sendVisualizador()
+                        createBarCode(data['attention_type'], data['attention_number']);
+                        setAttentionType(data['attention_type'], data['attention_number']);
+                        printbox();
+                    }
+                );
+            }
+
+        function sendVisualizador() {
+
+            let message = {
+                type: 'message',
+                text: 'Mensaje enviado desde Totem',
+                user: 'atencion',
+            }
+            // send message
+            this.socket.send(JSON.stringify(message));
+        }
+
         $(window).load(function() {
+            connection()
             $('#print-section').hide()
         })
     </script>
@@ -99,110 +222,22 @@
     <label><h2><b>Seleccione una Opción para  ser atendido:</b></h2></label>
 
     <div id="app" style='box-shadow: 10px 10px 10px; background-color: #088A08; margin-top: 40px;'>
+        <button type="button" class="btn btn-default btn-lg btn-block btn-xlarge" onClick='onMessage(this)' value='obra_social'>
+            OBRA SOCIAL
+        </button>
+        <br />
+        <button type="button" class="btn btn-default btn-lg btn-block btn-xlarge" onClick='onMessage(this)' value='pami'>
+            PAMI
+        </button>
+        <br />
+        <button type="button" class="btn btn-default btn-lg btn-block btn-xlarge" onClick='onMessage(this)' value='perfumeria'>
+            PERFUMERIA
+        </button>
+        <br />
+        <button type="button" class="btn btn-default btn-lg btn-block btn-xlarge" onClick='onMessage(this)' value='particular'>
+            PARTICULAR
+        </button>
     </div>
-
-    <script type="text/babel">
-        class Message extends React.Component {
-            constructor(props){
-                super(props);// prints out whatever is inside props
-                this.connect()
-            }
-            connect() {
-
-                let username = 'totem'
-                this.setState({username: username})
-                localStorage.username = username;
-
-                let socket = new WebSocket("ws://" + location.host + "/chat/main");
-                this.socket = socket;
-                socket.onmessage = (e) => {
-                    var data=JSON.parse(e.data).text.split(',')
-                    let user=JSON.parse(e.data).user
-                    $("#turno").html('<h1>Nº: '+ data[1] + '</h1>');
-                    if (data.length > 1 && user=='totem') {
-                        if(data[0]=='obra_social') {
-                            $('#tipo').html('<h2>OBRA SOCIAL</h2>');
-                            data[0]=1
-                        }
-                        else if (data[0]=='particular'){
-                            $('#tipo').html('<h2>PARTICULAR</h2>');
-                            data[0]=4
-                        }
-                        else if (data[0]=='pami'){
-                            $('#tipo').html('<h2>PAMI</h2>');
-                            data[0]=2
-                        }
-                        else if (data[0]=='perfumeria'){
-                            $('#tipo').html('<h2>PERFUMERIA</h2>');
-                            data[0]=3
-                        }
-
-                    $("#bcTarget").barcode(
-                            data[0] + '.' + data[1],
-                            "code128",
-                            {
-                              'barWidth': 4,
-                              'barHeight': 50,
-                              'color': 'black',
-                              'bgColor': '#ffffff',
-                              'showHRI': false,
-                             }
-                        );
-
-                    printbox()
-                    }
-
-
-                }
-                socket.onopen = () => {
-                    socket.send(JSON.stringify({
-                        type: 'connect',
-                        username: username
-                    }))
-                    this.setState({online: true})
-                }
-            }
-
-            onMessage(e) {
-                let text = e.target.value;
-
-                if (text == "") {
-                    return
-                }
-
-                let message = {
-                    type: 'message',
-                    text: text,
-                    user: 'totem'
-                }
-                // send message
-                this.socket.send(JSON.stringify(message));
-            }
-            render() {
-                return (
-                    <div>
-                        <button type="button" className="btn btn-default btn-lg btn-block btn-xlarge" onClick={this.onMessage.bind(this)} value='obra_social'>
-                            OBRA SOCIAL
-                        </button>
-                        <br />
-                        <button type="button" className="btn btn-default btn-lg btn-block btn-xlarge" onClick={this.onMessage.bind(this)} value='pami'>
-                            PAMI
-                        </button>
-                        <br />
-                        <button type="button" className="btn btn-default btn-lg btn-block btn-xlarge" onClick={this.onMessage.bind(this)} value='perfumeria'>
-                            PERFUMERIA
-                        </button>
-                        <br />
-                        <button type="button" className="btn btn-default btn-lg btn-block btn-xlarge" onClick={this.onMessage.bind(this)} value='particular'>
-                            PARTICULAR
-                        </button>
-                    </div>
-                )
-            }
-        }
-
-        ReactDOM.render(<Message />, document.getElementById('app'))
-    </script>
 
     </body>
 </html>

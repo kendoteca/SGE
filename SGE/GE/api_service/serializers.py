@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from GE.models import Registers, Persona
+from GE.models import Registers, Persona, InitialAttention
 
 
 class RegistersSerializer(serializers.ModelSerializer):
@@ -31,4 +31,14 @@ class PersonaSerializers(serializers.ModelSerializer):
         fields = (
             'user',
             'pin',
+        )
+
+
+class InitialAttentionSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = InitialAttention
+        fields = (
+            'attention_number',
+            'attention_type',
+            'created'
         )

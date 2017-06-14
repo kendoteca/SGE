@@ -128,92 +128,25 @@
         var numero_atencion_prioritaria = 0;
         var numero_atencion_booleano = false;
         var pinNumber;
+        var registerId;
 
 		function send(e) {
 
             if (terminar) {
                 // contador(e);
-                start(e.value)
-                $('#atender_'+e.value).replaceWith('<button type="button" id="atender_'+e.value+'" onclick="send(this)" value="'+e.value+'" class="btn btn-danger btn-sm">Terminar</button>')
-                terminar = false;
-
-                // Envia mensaje y crea el registro
-                let text = e.value;
-
-                if (text == "") {
-                    return
+                var por = creaRegistro(e);
+                if (!por) {
+                    start(e.value)
+                    $('#atender_'+e.value).replaceWith('<button type="button" id="atender_'+e.value+'" onclick="send(this)" value="'+e.value+'" class="btn btn-danger btn-sm">Terminar</button>')
+                    terminar = false;
                 }
-
-                var message = {
-                    type: 'message',
-                    text: text,
-                    user: 'atencion',
-                    pin: pinNumber,
-                    atencion_prioritaria_booleano: numero_atencion_booleano,
-                    numero_atencion: numero_atencion_prioritaria,
-                    puesto: puesto
-                }
-                // send message
-                this.socket.send(JSON.stringify(message));
-
-                // mensaje para las pantallas
-
-                message = {
-                    type: 'message',
-                    text: text,
-                    user: 'cantidad',
-                    puesto: puesto
-                }
-                // send message
-                this.socket.send(JSON.stringify(message));
             }
             else {
                 $('#atender_'+e.value).replaceWith('<button type="button" id="atender_'+e.value+'" onclick="showPinModal(this)" value="'+e.value+'" class="btn btn-primary btn-sm">LLamar y Atender</button>')
                 stop_timmer();
-
-                if(e.value=='obra_social') {
-                    tiempo_obra_social = tiempo_obra_social+secondi+(minuti*60)
-                }
-                if (e.value=='particular') {
-                    tiempo_particular = tiempo_particular+secondi+(minuti*60)
-                }
-                if (e.value=='pami'){
-                    tiempo_pami = tiempo_pami+secondi+(minuti*60)
-                }
-                if (e.value=='perfumeria'){
-                    tiempo_perfumeria = tiempo_perfumeria+secondi+(minuti*60)
-                }
                 end(e.value);
+                actualizaRegistro()
                 terminar = true;
-
-                // Envia mensaje y crea el registro
-                let text = e.value;
-                let observaciones = document.getElementById("observaciones").value || '';
-
-                if (text == "") {
-                    return
-                }
-                let message = {
-                    type: 'message',
-                    text: text,
-                    user: 'update',
-                    puesto: puesto,
-                    observaciones: observaciones,
-                    atencion_prioritaria_booleano: numero_atencion_booleano,
-                    numero_atencion: numero_atencion_prioritaria,
-                }
-                if (!numero_atencion_booleano) {
-                    message['numero'] = numero_llamado[1]
-                    message['tipo'] = numero_llamado[0]
-                }
-                else {
-                    message['numero'] = numero_atencion_prioritaria
-                    message['tipo'] = e.value
-                }
-
-                // send message
-                this.socket.send(JSON.stringify(message));
-                numero_atencion_booleano = false;
             }
         }
 
@@ -243,47 +176,8 @@
             socket.onmessage = (e) => {
                 var data=JSON.parse(e.data).text.split(',')
                 var user=JSON.parse(e.data).user
-                var sender=data[0]
-                if (data.length > 1 && user=='totem') {
-                    if(data[0]=='obra_social') {
-                        numero = parseInt($('#obra_social_numero').html())
-                        $('#obra_social_numero').html(numero+1);
-                    }
-                    else if (data[0]=='particular'){
-                       numero = parseInt($('#particular_numero').html())
-                        $('#particular_numero').html(numero+1);
-                    }
-                    else if (data[0]=='pami'){
-                        numero = parseInt($('#pami_numero').html())
-                        $('#pami_numero').html(numero+1);
-                    }
-                    else if (data[0]=='perfumeria'){
-                        numero = parseInt($('#perfumeria_numero').html())
-                        $('#perfumeria_numero').html(numero+1);
-                    }
-                }
-                else if (data.length > 1 && sender=='cantidad') {
-                	if(data[1]=='obra_social') {
-                        numero = parseInt($('#obra_social_numero').html())
-                		$('#obra_social_numero').html(numero-1);
-                	}
-                	else if (data[1]=='particular'){
-                        numero = parseInt($('#particular_numero').html())
-                		$('#particular_numero').html(numero-1);
-                	}
-                	else if (data[1]=='pami'){
-                        numero = parseInt($('#pami_numero').html())
-                		$('#pami_numero').html(numero-1);
-                	}
-                	else if (data[1]=='perfumeria'){
-                        numero = parseInt($('#perfumeria_numero').html())
-                		$('#perfumeria_numero').html(numero-1);
-                	}
-                }
 
-                if(user=='visualizador') {
-                    numero_llamado = data
-                }
+                onMessage();
 
         	}
             socket.onopen = () => {
@@ -293,6 +187,69 @@
                 }))
             }
 		}
+
+        function actualizarEstados(data) {
+            $('#obra_social_numero').html(data.obra_social);
+            $('#particular_numero').html(data.particular);
+            $('#pami_numero').html(data.pami);
+            $('#perfumeria_numero').html(data.perfumeria);
+        }
+        onMessage()
+        function onMessage() {
+
+            $.get(
+                'http://'+ location.host +'/api/consulta_estado/',
+                function(data, status){
+                    actualizarEstados(data)
+                }
+            );
+        }
+
+        function creaRegistro(e) {
+
+            $.post(
+                'http://'+ location.host +'/api/crear_registro/',
+                {
+                    pin: pinNumber,
+                    tipo_atencion: e.value
+                },
+                function(data, status){
+                    onMessage();
+
+                    registerId = data.id_register
+                    sendVisualizador(e)
+
+                }
+            )
+        }
+
+        function actualizaRegistro() {
+
+            $.get(
+                'http://'+ location.host +'/api/actualiza_registro/' + registerId,
+                function(data, status){
+                    onMessage();
+                }
+            );
+        }
+
+        function atencionPrioritaria() {
+            $.post(
+                'http://'+ location.host +'/api/atencion_prioritaria/',
+                {
+                    pin: pinNumber,
+                    tipo_atencion: state.value,
+                    numero_atencion: numero_atencion_prioritaria
+                },
+                function(data, status) {
+                    start(state.value)
+                    $('#atender_'+state.value).replaceWith('<button type="button" id="atender_'+state.value+'" onclick="send(this)" value="'+state.value+'" class="btn btn-danger btn-sm">Terminar</button>')
+                    terminar = false;
+                    registerId = data.id_register
+                    onMessage();
+                }
+            );
+        }
 
         // Modal
 
@@ -306,7 +263,6 @@
             var modal = document.getElementById('myModal');
             atencion_prioritaria_id = values.value;
 
-            debugger
             modal.style.display = "block";
         }
 
@@ -347,6 +303,7 @@
         function checkPin(){
 
             pin_number = document.getElementById('pin_number').value
+            document.getElementById('pin_number').value=''
             $.getJSON(
                 'http://'+location.host+'/api/user_pin/'+pin_number+'/ ',
                 function(response){
@@ -354,7 +311,7 @@
                     pinNumber = pin_number
                     if (state.id.indexOf('atencion') != 0 && isPinGood) {
                         sendVisualizador(state);
-                        send(state);
+                        send(state)
                         closePinModal()
                     }
                     else if (state.id.indexOf('atencion') >= 0 && isPinGood){
@@ -371,14 +328,27 @@
 
         function atencion_prioritaria(value) {
             numero_atencion_prioritaria = document.getElementById('numero_prioritario').value;
-            numero_atencion_booleano = true;
+            // numero_atencion_booleano = true;
             value.value = atencion_prioritaria_id
              // Success Function
 
             closeModal()
-            send(value);
+            atencionPrioritaria();
         }
 
+        function valida(e){
+            tecla = (document.all) ? e.keyCode : e.which;
+
+            //Tecla de retroceso para borrar, siempre la permite
+            if (tecla==8){
+                return true;
+            }
+
+            // Patron de entrada, en este caso solo acepta numeros
+            patron =/[0-9]/;
+            tecla_final = String.fromCharCode(tecla);
+            return patron.test(tecla_final);
+        }
 
      </script>
 
@@ -395,7 +365,7 @@
             </div>
             <div class="modal-body">
                 <p style="align-content: center;">Ingrese el número del Cliente:</p>
-                <input type='number' id='numero_prioritario' style="align-content: center;">
+                <input type='number' id='numero_prioritario' style="align-content: center;" autofocus>
             </div>
             <div class="modal-footer" style="align-content: center;">
                 <button type="button" onclick="atencion_prioritaria(this)" id='aceptar_atencion' class="btn btn-default">Aceptar</button>
@@ -413,7 +383,7 @@
             </div>
             <div class="modal-body">
                 <p style="align-content: center;">Ingrese su pin personal:</p>
-                <input type='number' id='pin_number' style="align-content: center;">
+                <input type="password" onKeyPress='return valida(event)' id='pin_number' style="align-content: center;" autofocus>
             </div>
             <div class="modal-footer" style="align-content: center;">
                 <button type="button" onclick="checkPin(this)" id='aceptar_pin' class="btn btn-default">Aceptar</button>

@@ -84,170 +84,193 @@ def check_alert():
 def on_message(message):
     payload = message.content['text']
     user = message.channel_session['user']
-    sender = message.content['text']['user']
-    import ipdb; ipdb.set_trace()
-    persona = ''
+    if message.content['text']['user'] == 'visualizador':
+        puesto = message.content['text']['puesto']
 
-    try:
-        pin = message.content['text']['pin']
-    except KeyError:
-        pin = None
-
-    if pin:
-        persona = Persona.objects.get(pin=message.content['text']['pin'])
-
-    if user == 'totem':
-
-        attention = AttentionType.objects.get(name=message.content['text']['text'])
-
-        try:
-            last_attention = InitialAttention.objects.filter(
-                attention_type=attention
-            ).order_by('-id_initial_attention')[0]
-        except Exception as e:
-            last_attention = None
-
-        if last_attention and (timezone.now().date() == last_attention.created.date()):
-            initial_atention = InitialAttention.objects.create(
-                attention_number=last_attention.attention_number+1,
-                attention_type=attention,
-            )
-        else:
-            initial_atention = InitialAttention.objects.create(
-                attention_number=1,
-                attention_type=attention,
-            )
-
-        message.content['text']['text'] = '{},{}'.format(
-            initial_atention.attention_type.name,
-            initial_atention.attention_number
-        )
-    elif user == 'atencion':
         att = AttentionType.objects.get(name=message.content['text']['text'])
-        if message.content['text'].get('atencion_prioritaria_booleano') and sender == 'atencion':
-            attention = InitialAttention.objects.get(
-                attention_type=att,
-                attention_number=message.content['text']['numero_atencion'],
-                created__contains=timezone.localdate()
-            )
-            Registers.objects.create(
-                pin=persona,
-                attention_number=attention,
-                priority_attention=message.content['text'].get('atencion_prioritaria_booleano'),
-                attention_type=att,
-                start_attention=timezone.now(),
-                observations='',
-                finish_attention=timezone.now(),
-                sellplace=SellPlace.objects.get(id_sellplace=1),
-                sucursal=Sucursal.objects.get(id_sucursal=1),
-            )
-        elif message.content['text'].get('atencion_prioritaria_booleano') and sender == 'update':
-            attention = InitialAttention.objects.get(
-                attention_type=att,
-                attention_number=message.content['text']['numero_atencion'],
-                created__contains=timezone.localdate()
-            )
-            register = Registers.objects.get(attention_type=att, attention_number=attention)
-            register.finish_attention = timezone.now()
-            register.observations = message.content['text']['observaciones']
-            register.save()
+        hola = Registers.objects.filter(
+            attention_type=att,
+            priority_attention=False,
+            start_attention__gt=timezone.now().date()
+        )
+        number_to_be_attend = '',
+        next_number = 0
 
-        if sender == 'update' and not message.content['text'].get('atencion_prioritaria_booleano'):
-            attention = InitialAttention.objects.get(
+        if len(hola) == 0:
+            lolo = InitialAttention.objects.filter(
                 attention_type=att,
-                attention_number=message.content['text']['numero'],
-                created__contains=timezone.localdate()
-            )
-            register = Registers.objects.get(attention_type=att, attention_number=attention)
-            register.finish_attention = timezone.now()
-            register.observations = message.content['text']['observaciones']
-            register.save()
-        elif not message.content['text'].get('atencion_prioritaria_booleano'):
-            hola = Registers.objects.filter(
+                created__gt=timezone.now().date()
+            ).order_by('id_initial_attention')[0]
+
+            next_number = lolo.attention_number
+        else:
+
+            last = hola.order_by('-id_register')[0]
+            check_number = len(InitialAttention.objects.filter(
+                attention_number__gt=last.attention_number.attention_number,
                 attention_type=att,
-                priority_attention=False,
-                start_attention__gt=timezone.localdate()
-            )
-            if len(hola) == 0:
-                lolo = InitialAttention.objects.filter(
+                created__gt=timezone.now().date()
+            ))
+
+            for number in range(1, check_number+1):
+                number_to_be_attend = InitialAttention.objects.get(
+                    attention_number=last.attention_number.attention_number+number,
                     attention_type=att,
-                    created__gt=timezone.localdate()
-                ).order_by('id_initial_attention')[0]
-                message.content['text']['text'] = '{},{},{}'.format(
-                    att.name,
-                    lolo.attention_number,
-                    message.content['text']['puesto']
+                    created__gt=timezone.now().date()
                 )
-                message = messages.info(payload['text'], sender if sender == 'visualizador' else user)
-                Group('chat').send(message)
-                if sender != 'visualizador':
-                    Registers.objects.create(
-                        pin=persona,
-                        attention_number=lolo,
-                        priority_attention=False,
-                        attention_type=att,
-                        start_attention=timezone.now(),
-                        observations='',
-                        finish_attention=timezone.now(),
-                        sellplace=SellPlace.objects.get(id_sellplace=1),
-                        sucursal=Sucursal.objects.get(id_sucursal=1),
-                    )
-            else:
-                if sender == 'cantidad':
-                    text = message.content['text']['text']
+                if not Registers.objects.filter(
+                    attention_number=number_to_be_attend,
+                    attention_type=att,
+                    start_attention__gt=timezone.now().date()
+                ).exists():
+                    next_number = last.attention_number.attention_number+number
+                    break
 
-                    message.content['text']['text'] = '{},{}'.format(
-                            sender,
-                            text
-                    )
-                else:
-                    last = hola.order_by('-id_register')[0]
-                    number_to_be_attend = '',
-                    next_number = 0
-                    check_number = len(InitialAttention.objects.filter(
-                        attention_number__gt=last.attention_number.attention_number,
-                        attention_type=att,
-                        created__gt=timezone.localdate()
-                    ))
+        message.content['text']['text'] = '{},{},{}'.format(
+            att.name,
+            next_number,
+            puesto
+        )
 
-                    for number in range(1, check_number+1):
-                        number_to_be_attend = InitialAttention.objects.get(
-                            attention_number=last.attention_number.attention_number+number,
-                            attention_type=att,
-                            created__gt=timezone.localdate()
-                        )
-                        if not Registers.objects.filter(
-                            attention_number=number_to_be_attend,
-                            attention_type=att,
-                            start_attention__gt=timezone.localdate()
-                        ).exists():
-                            next_number = last.attention_number.attention_number+number
-                            break
-                    if next_number != 0:
-                        puesto = message.content['text']['puesto']
-                        message.content['text']['text'] = '{},{},{}'.format(
-                            att.name,
-                            next_number,
-                            puesto
-                        )
-                        message = messages.info(payload['text'], sender if sender == 'visualizador' else user)
-                        Group('chat').send(message)
-                        if sender != 'visualizador':
-                            Registers.objects.create(
-                                pin=persona,
-                                attention_number=number_to_be_attend,
-                                priority_attention=False,
-                                attention_type=att,
-                                start_attention=timezone.now(),
-                                observations='',
-                                finish_attention=timezone.now(),
-                                sellplace=SellPlace.objects.get(id_sellplace=1),
-                                sucursal=Sucursal.objects.get(id_sucursal=1),
-                            )
-
-    check_alert()
     message = messages.info(payload['text'], user)
     Group('chat').send(message)
+
+
+    # sender = message.content['text']['user']
+    # persona = ''
+
+    # try:
+    #     pin = message.content['text']['pin']
+    # except KeyError:
+    #     pin = None
+
+    # if pin:
+    #     persona = Persona.objects.get(pin=message.content['text']['pin'])
+
+    # if user == 'atencion':
+    #     att = AttentionType.objects.get(name=message.content['text']['text'])
+    #     if message.content['text'].get('atencion_prioritaria_booleano') and sender == 'atencion':
+    #         attention = InitialAttention.objects.get(
+    #             attention_type=att,
+    #             attention_number=message.content['text']['numero_atencion'],
+    #             created__contains=timezone.localdate()
+    #         )
+    #         Registers.objects.create(
+    #             pin=persona,
+    #             attention_number=attention,
+    #             priority_attention=message.content['text'].get('atencion_prioritaria_booleano'),
+    #             attention_type=att,
+    #             start_attention=timezone.now(),
+    #             observations='',
+    #             finish_attention=timezone.now(),
+    #             sellplace=SellPlace.objects.get(id_sellplace=1),
+    #             sucursal=Sucursal.objects.get(id_sucursal=1),
+    #         )
+    #     elif message.content['text'].get('atencion_prioritaria_booleano') and sender == 'update':
+    #         attention = InitialAttention.objects.get(
+    #             attention_type=att,
+    #             attention_number=message.content['text']['numero_atencion'],
+    #             created__contains=timezone.localdate()
+    #         )
+    #         register = Registers.objects.get(attention_type=att, attention_number=attention)
+    #         register.finish_attention = timezone.now()
+    #         register.observations = message.content['text']['observaciones']
+    #         register.save()
+
+    #     if sender == 'update' and not message.content['text'].get('atencion_prioritaria_booleano'):
+    #         attention = InitialAttention.objects.get(
+    #             attention_type=att,
+    #             attention_number=message.content['text']['numero'],
+    #             created__contains=timezone.localdate()
+    #         )
+    #         register = Registers.objects.get(attention_type=att, attention_number=attention)
+    #         register.finish_attention = timezone.now()
+    #         register.observations = message.content['text']['observaciones']
+    #         register.save()
+    #     elif not message.content['text'].get('atencion_prioritaria_booleano'):
+    #         hola = Registers.objects.filter(
+    #             attention_type=att,
+    #             priority_attention=False,
+    #             start_attention__gt=timezone.localdate()
+    #         )
+    #         if len(hola) == 0:
+    #             lolo = InitialAttention.objects.filter(
+    #                 attention_type=att,
+    #                 created__gt=timezone.localdate()
+    #             ).order_by('id_initial_attention')[0]
+    #             message.content['text']['text'] = '{},{},{}'.format(
+    #                 att.name,
+    #                 lolo.attention_number,
+    #                 message.content['text']['puesto']
+    #             )
+    #             message = messages.info(payload['text'], sender if sender == 'visualizador' else user)
+    #             Group('chat').send(message)
+    #             if sender != 'visualizador':
+    #                 Registers.objects.create(
+    #                     pin=persona,
+    #                     attention_number=lolo,
+    #                     priority_attention=False,
+    #                     attention_type=att,
+    #                     start_attention=timezone.now(),
+    #                     observations='',
+    #                     finish_attention=timezone.now(),
+    #                     sellplace=SellPlace.objects.get(id_sellplace=1),
+    #                     sucursal=Sucursal.objects.get(id_sucursal=1),
+    #                 )
+    #         else:
+    #             if sender == 'cantidad':
+    #                 text = message.content['text']['text']
+
+    #                 message.content['text']['text'] = '{},{}'.format(
+    #                         sender,
+    #                         text
+    #                 )
+    #             else:
+    #                 last = hola.order_by('-id_register')[0]
+    #                 number_to_be_attend = '',
+    #                 next_number = 0
+    #                 check_number = len(InitialAttention.objects.filter(
+    #                     attention_number__gt=last.attention_number.attention_number,
+    #                     attention_type=att,
+    #                     created__gt=timezone.localdate()
+    #                 ))
+
+    #                 for number in range(1, check_number+1):
+    #                     number_to_be_attend = InitialAttention.objects.get(
+    #                         attention_number=last.attention_number.attention_number+number,
+    #                         attention_type=att,
+    #                         created__gt=timezone.localdate()
+    #                     )
+    #                     if not Registers.objects.filter(
+    #                         attention_number=number_to_be_attend,
+    #                         attention_type=att,
+    #                         start_attention__gt=timezone.localdate()
+    #                     ).exists():
+    #                         next_number = last.attention_number.attention_number+number
+    #                         break
+    #                 if next_number != 0:
+    #                     puesto = message.content['text']['puesto']
+    #                     message.content['text']['text'] = '{},{},{}'.format(
+    #                         att.name,
+    #                         next_number,
+    #                         puesto
+    #                     )
+    #                     message = messages.info(payload['text'], sender if sender == 'visualizador' else user)
+    #                     Group('chat').send(message)
+    #                     if sender != 'visualizador':
+    #                         Registers.objects.create(
+    #                             pin=persona,
+    #                             attention_number=number_to_be_attend,
+    #                             priority_attention=False,
+    #                             attention_type=att,
+    #                             start_attention=timezone.now(),
+    #                             observations='',
+    #                             finish_attention=timezone.now(),
+    #                             sellplace=SellPlace.objects.get(id_sellplace=1),
+    #                             sucursal=Sucursal.objects.get(id_sucursal=1),
+    #                         )
+
+    # check_alert()
 
 
 @channel_session

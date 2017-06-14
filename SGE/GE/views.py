@@ -40,13 +40,13 @@ def final(request):
             number_object = InitialAttention.objects.get(
                 attention_number=numero,
                 attention_type=attention_object,
-                created__contains=timezone.localdate()
+                created__contains=timezone.now().date()
             )
 
             register = Registers.objects.get(
                 attention_number=number_object,
                 attention_type=attention_object,
-                finish_attention__contains=timezone.localdate()
+                finish_attention__contains=timezone.now().date()
             )
 
             register.finish_total_attention = timezone.now()
@@ -80,65 +80,65 @@ def home(request):
     except Exception:
         return HttpResponseRedirect(reverse('login'))
 
-    att_obra = AttentionType.objects.get(name='obra_social')
-    att_particular = AttentionType.objects.get(name='particular')
-    att_perfumeria = AttentionType.objects.get(name='perfumeria')
-    att_pami = AttentionType.objects.get(name='pami')
+    # att_obra = AttentionType.objects.get(name='obra_social')
+    # att_particular = AttentionType.objects.get(name='particular')
+    # att_perfumeria = AttentionType.objects.get(name='perfumeria')
+    # att_pami = AttentionType.objects.get(name='pami')
 
-    # promedio_total = Registers.objects.aggregate(Avg('duracion'))
-    dictionary = dict()
-    try:
-        promedio_por_tipo = Registers.objects.values('attention_type__name').annotate(Avg('duracion'))
-        for key, value in promedio_por_tipo:
-            dictionary[key] = value
+    # # promedio_total = Registers.objects.aggregate(Avg('duracion'))
+    # dictionary = dict()
+    # try:
+    #     promedio_por_tipo = Registers.objects.values('attention_type__name').annotate(Avg('duracion'))
+    #     for key, value in promedio_por_tipo:
+    #         dictionary[key] = value
 
-    except Exception:
-        import ipdb; ipdb.set_trace()
-        promedio_por_tipo = None
+    # except Exception:
+    #     import ipdb; ipdb.set_trace()
+    #     promedio_por_tipo = None
 
-    reg_obra = Registers.objects.filter(
-        attention_type=att_obra,
-        start_attention__contains=timezone.localdate()
-    ).count()
-    reg_particular = Registers.objects.filter(
-        attention_type=att_particular,
-        start_attention__contains=timezone.localdate()
-    ).count()
-    reg_perfumeria = Registers.objects.filter(
-        attention_type=att_perfumeria,
-        start_attention__contains=timezone.localdate()
-    ).count()
-    reg_pami = Registers.objects.filter(
-        attention_type=att_pami,
-        start_attention__contains=timezone.localdate()
-    ).count()
+    # reg_obra = Registers.objects.filter(
+    #     attention_type=att_obra,
+    #     start_attention__contains=timezone.localdate()
+    # ).count()
+    # reg_particular = Registers.objects.filter(
+    #     attention_type=att_particular,
+    #     start_attention__contains=timezone.localdate()
+    # ).count()
+    # reg_perfumeria = Registers.objects.filter(
+    #     attention_type=att_perfumeria,
+    #     start_attention__contains=timezone.localdate()
+    # ).count()
+    # reg_pami = Registers.objects.filter(
+    #     attention_type=att_pami,
+    #     start_attention__contains=timezone.localdate()
+    # ).count()
 
-    obra_social_quantity = InitialAttention.objects.filter(
-        created__contains=timezone.localdate(),
-        attention_type=att_obra
-    ).count()
+    # obra_social_quantity = InitialAttention.objects.filter(
+    #     created__contains=timezone.localdate(),
+    #     attention_type=att_obra
+    # ).count()
 
-    pami_quantity = InitialAttention.objects.filter(
-        created__contains=timezone.localdate(),
-        attention_type=att_pami
-    ).count()
-    perfumeria_quantity = InitialAttention.objects.filter(
-        created__contains=timezone.localdate(),
-        attention_type=att_perfumeria
-    ).count()
-    particular_quantity = InitialAttention.objects.filter(
-        created__contains=timezone.localdate(),
-        attention_type=att_particular
-    ).count()
+    # pami_quantity = InitialAttention.objects.filter(
+    #     created__contains=timezone.localdate(),
+    #     attention_type=att_pami
+    # ).count()
+    # perfumeria_quantity = InitialAttention.objects.filter(
+    #     created__contains=timezone.localdate(),
+    #     attention_type=att_perfumeria
+    # ).count()
+    # particular_quantity = InitialAttention.objects.filter(
+    #     created__contains=timezone.localdate(),
+    #     attention_type=att_particular
+    # ).count()
 
     return render(request, 'atencion.html', {
         'puesto': puesto,
         'user': request.user,
-        'obra_social_quantity': obra_social_quantity - reg_obra,
-        'pami_quantity': pami_quantity - reg_pami,
-        'perfumeria_quantity': perfumeria_quantity - reg_perfumeria,
-        'particular_quantity': particular_quantity - reg_particular,
-        'promedio_por_tipo': promedio_por_tipo,
+        # 'obra_social_quantity': obra_social_quantity - reg_obra,
+        # 'pami_quantity': pami_quantity - reg_pami,
+        # 'perfumeria_quantity': perfumeria_quantity - reg_perfumeria,
+        # 'particular_quantity': particular_quantity - reg_particular,
+        # 'promedio_por_tipo': promedio_por_tipo,
     })
 
 

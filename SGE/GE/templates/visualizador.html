@@ -25,9 +25,9 @@
 
     <script>
         $(function(){
-         eval(Babel.transform($('script[type="text/babel"]').text(), {
+            eval(Babel.transform($('script[type="text/babel"]').text(), {
              presets: ['es2015', 'react', 'stage-0']
-         }).code)
+            }).code)
         })
 
         function playAudio() {
@@ -48,7 +48,7 @@
             let tipo;
 
 
-            if (data.length > 1 && JSON.parse(e.data).user=='visualizador') {
+            if (data.length > 1 && JSON.parse(e.data).user=='atencion') {
                 playAudio()
 
                 if(data[0]=='obra_social') {
@@ -100,6 +100,7 @@
             let socket = new WebSocket("ws://" + location.host + "/chat/main");
             this.socket = socket;
             socket.onmessage = (e) => {
+                debugger
                 modal(e)
             }
             socket.onopen = () => {
@@ -112,7 +113,7 @@
         connect();
         $(window).load(function() {
             playVid();
-        })
+        });
      </script>
 
     <audio id="timbre">
