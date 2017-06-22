@@ -93,8 +93,9 @@ def on_message(message):
             priority_attention=False,
             start_attention__gt=timezone.now().date()
         )
-        number_to_be_attend = '',
+        number_to_be_attend = ''
         next_number = 0
+        # import ipdb; ipdb.set_trace()
 
         if len(hola) == 0:
             lolo = InitialAttention.objects.filter(
@@ -111,7 +112,7 @@ def on_message(message):
                 attention_type=att,
                 created__gt=timezone.now().date()
             ))
-
+            import ipdb; ipdb.set_trace()
             for number in range(1, check_number+1):
                 number_to_be_attend = InitialAttention.objects.get(
                     attention_number=last.attention_number.attention_number+number,
@@ -121,7 +122,7 @@ def on_message(message):
                 if not Registers.objects.filter(
                     attention_number=number_to_be_attend,
                     attention_type=att,
-                    start_attention__gt=timezone.now().date()
+                    start_attention__contains=timezone.now().date()
                 ).exists():
                     next_number = last.attention_number.attention_number+number
                     break

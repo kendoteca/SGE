@@ -32,7 +32,7 @@ def final(request):
     alert = ''
     if request.method == 'POST':
         try:
-            tipo, numero = request.POST['final'].split('.')
+            numero, tipo = request.POST['final'].split('.')
             attention_object = AttentionType.objects.get(
                 id_attention_type=tipo
             )
@@ -244,3 +244,14 @@ def configurations(request):
         'form': form,
     }
     return render(request, 'configurations.html', data)
+
+
+def personas(request):
+    return render(request, 'reporte_personas.html')
+
+
+def alertas(request):
+    return render(request, 'alertas.html')
+
+def prueba(request):
+    return render(request, 'prueba.html')

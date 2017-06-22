@@ -62,6 +62,7 @@ class Sucursal(models.Model):
 class AttentionType(models.Model):
     id_attention_type = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
+    label = models.CharField(max_length=50)
 
     def __str__(self):
         return str(self.name)
@@ -107,7 +108,7 @@ class Registers(models.Model):
 
     finish_total_attention = models.DateTimeField(blank=True, null=True)
 
-    duracion = models.IntegerField(null=True)
+    duracion = models.IntegerField(default=0)
 
     sellplace = models.ForeignKey(SellPlace)
 

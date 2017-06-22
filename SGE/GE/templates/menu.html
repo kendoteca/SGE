@@ -201,7 +201,7 @@ fieldset {
   <form id="contact" method="post">
     <h3>Menu de Opciones</h3>
     <h4>Seleccione una Opción para continuar</h4>
-      <input name="submit" type="button" onclick = "prueba()" id="contact-submit" value='Ver Registros'>
+      <input name="submit" type="button" onclick = "location='{% url 'registros' %}'" id="contact-submit" value='Ver Registros'>
       <input name="submit" type="button" onclick = "location='{% url 'alertas' %}'" id="contact-submit" value='Ver Alertas'>
       <input name="submit" type="button" onclick = "location='{% url 'personas' %}'" id="contact-submit" value='Ver Reporte de Personas'>
       <input name="submit" type="button" onclick = "location='{% url 'configurations' %}'" id="contact-submit" value='Ver Configuraciones'>

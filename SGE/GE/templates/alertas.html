@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<head>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script type="text/javascript">
+        dict = {}; // used to get the values of the page
+
+
+        function prueba() {
+            $.ajax({
+                  type: "GET",
+                  url: 'http://'+location.host+'/api/snippets/',
+                  data: data,
+                  success: console.log('hola'),
+                  dataType: console.log('nada')
+            });
+        }
+
+        $(function() {
+            $("#datepicker").datepicker();
+            $("#datepicker").datepicker("option", "dateFormat", "yy-mm-dd");
+        } );
+
+        function getRegisters(data) {
+
+            $.post(
+                'http://'+ location.host +'/api/alertas/',
+                data,
+                function(data, status){
+                    $.each(data, function (i, item) {
+                        $('#result-table tr:last').after('<tr><th scope="row">'+item.id_alerta+'</th><td>'+item.starting_alert+'</td><td>'+item.finish_alert+'</td></tr>');
+                    });
+
+                }
+            );
+        }
+
+        function buscar() {
+            if ($('#datepicker').val() != "") {
+                dict['datepicker'] = $('#datepicker').val()
+            }
+            getRegisters(dict);
+        }
+
+    </script>
+
+    <style type="text/css">
+    .table{
+        font-size: 13px;
+    }
+    </style>
+
+</head>
+<body style='background: #546973;'>
+    <div class='container' style='background: #546973;'>
+            <h3>Seleccione los filtros de Busqueda:</h3>
+        </div>
+        <div class="container" style="background: white;">
+            <div>
+              <p>Seleccione una Fecha: <input type="text" id="datepicker"></p>
+            </div>
+            <div>
+              <div class="row">
+                  <div class="col">
+                      <button type="button" onClick='buscar()' class="btn btn-primary">Buscar</button>
+                  </div>
+              </div>
+            </div>
+        </div>
+        <div class='container' style='background: #546973;'>
+            <h3>Resultado de Busqueda:</h3>
+        </div>
+        <div class='container' style='background: white'>
+            <table class="table" id='result-table'>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Hora Comienzo Alerta</th>
+                        <th>Hora Finalizacion Alerta</th>
+                    </tr>
+                </thead>
+              <tbody>
+              </tbody>
+            </table>
+        </div>
+
+</body>
+
+
+
+{% endblock %}

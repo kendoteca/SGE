@@ -1,22 +1,11 @@
 from rest_framework import serializers
-from GE.models import Registers, Persona, InitialAttention
+from GE.models import Registers, Persona, InitialAttention, AttentionType, Alerta
 
 
 class RegistersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Registers
-        fields = (
-            'id_register',
-            'priority_attention',
-            'attention_number',
-            'attention_type',
-            'start_attention',
-            'observations',
-            'finish_attention',
-            'finish_total_attention',
-            'sellplace',
-            'sucursal',
-        )
+        fields = '__all__'
 
     def create(self, validated_data):
         """
@@ -26,12 +15,20 @@ class RegistersSerializer(serializers.ModelSerializer):
 
 
 class PersonaSerializers(serializers.ModelSerializer):
+
+    name = serializers.PrimaryKeyRelatedField(
+        read_only=True, source='user.first_name',
+        default=serializers.CurrentUserDefault()
+    )
+
+    last_name = serializers.PrimaryKeyRelatedField(
+        read_only=True, source='user.last_name',
+        default=serializers.CurrentUserDefault()
+    )
+
     class Meta:
         model = Persona
-        fields = (
-            'user',
-            'pin',
-        )
+        fields = '__all__'
 
 
 class InitialAttentionSerializers(serializers.ModelSerializer):
@@ -42,3 +39,15 @@ class InitialAttentionSerializers(serializers.ModelSerializer):
             'attention_type',
             'created'
         )
+
+
+class AlertaSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Alerta
+        fields = '__all__'
+
+
+class AttentionTypeSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = AttentionType
+        fields = '__all__'

@@ -35,7 +35,9 @@ urlpatterns = [
     url(r'^chat/$', views.chat, name='chat'),
     url(r'^menu/$', views.menu, name='menu'),
     url(r'^registros/$', views.registros, name='registros'),
-    url(r'^alertas/$', views.menu, name='alertas'),
-    url(r'^personas/$', views.menu, name='personas'),
+    url(r'^personas/$', views.personas, name='personas'),
+    url(r'^alertas/$', views.alertas, name='alertas'),
+    url(r'^personas/$', views.personas, name='personas'),
+    url(r'^prueba/$', views.prueba, name='prueba'),
     url(r'^api/', include('GE.api_service.api_urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

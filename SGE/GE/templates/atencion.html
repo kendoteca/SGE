@@ -57,11 +57,6 @@
     </style>
 
     <script>
-		$(function(){
-		 eval(Babel.transform($('script[type="text/babel"]').text(), {
-		     presets: ['es2015', 'react', 'stage-0']
-		 }).code)
-		})
 
         var ore = 0, minuti = 0, secondi = 0, decimi = 0;
         var vis = "";
@@ -129,16 +124,22 @@
         var numero_atencion_booleano = false;
         var pinNumber;
         var registerId;
+        var status = '';
+        var atencion_activa = false;
+        var tipo_atencion_activa = '';
 
 		function send(e) {
 
             if (terminar) {
                 // contador(e);
-                var por = creaRegistro(e);
-                if (!por) {
+                creaRegistro(e);
+                if (status != 'error') {
                     start(e.value)
                     $('#atender_'+e.value).replaceWith('<button type="button" id="atender_'+e.value+'" onclick="send(this)" value="'+e.value+'" class="btn btn-danger btn-sm">Terminar</button>')
                     terminar = false;
+                    atencion_activa = true;
+                    tipo_atencion_activa = e.value;
+
                 }
             }
             else {
@@ -147,10 +148,11 @@
                 end(e.value);
                 actualizaRegistro()
                 terminar = true;
+                atencion_activa = true;
             }
         }
 
-        function sendVisualizador(e) {
+        function sendVisualizador(e, send) {
             let text = e.value;
 
             if (text == "") {
@@ -165,6 +167,9 @@
             }
             // send message
             this.socket.send(JSON.stringify(message));
+
+            send(e);
+
         }
 
 		function connection() {
@@ -188,19 +193,50 @@
             }
 		}
 
+        actualizarPromedios()
+
+        function actualizarPromedios() {
+            $.get(
+                'http://'+ location.host +'/api/promedios/',
+                function(data, status){
+                    actualizaPromedios(data)
+                }
+            );
+        }
+
         function actualizarEstados(data) {
             $('#obra_social_numero').html(data.obra_social);
             $('#particular_numero').html(data.particular);
             $('#pami_numero').html(data.pami);
             $('#perfumeria_numero').html(data.perfumeria);
         }
+
+        function actualizaPromedios(data) {
+            debugger
+            $('#promedio-obra_social').html('Demora Promedio <br />' + data.obra_social + ' min');
+            $('#promedio-particular').html('Demora Promedio <br />' + data.particular + ' min');
+            $('#promedio-pami').html('Demora Promedio <br />' + data.pami + ' min');
+            $('#promedio-perfumeria').html('Demora Promedio <br />' + data.perfumeria + ' min');
+        }
+
+        var estado_atenciones = new Numeros(0, 0, 0, 0);
+        function Numeros(obra_social, particular, pami, perfumeria) {
+            this.obra_social = obra_social;
+            this.particular = particular;
+            this.pami = pami;
+            this.perfumeria = perfumeria;
+        }
+
         onMessage()
         function onMessage() {
-
             $.get(
                 'http://'+ location.host +'/api/consulta_estado/',
                 function(data, status){
-                    actualizarEstados(data)
+                    actualizarEstados(data);
+                    estado_atenciones.obra_social=data.obra_social;
+                    estado_atenciones.pami=data.pami;
+                    estado_atenciones.particular=data.particular;
+                    estado_atenciones.perfumeria=data.perfumeria;
                 }
             );
         }
@@ -214,13 +250,18 @@
                     tipo_atencion: e.value
                 },
                 function(data, status){
+                    status = status
                     onMessage();
 
                     registerId = data.id_register
-                    sendVisualizador(e)
 
-                }
+                },
+
             )
+            .fail(function() {
+               status = 'error'
+               alert(status)
+            })
         }
 
         function actualizaRegistro() {
@@ -274,13 +315,17 @@
         }
 
         function showPinModal(values) {
-             // Get the modal
-            var modal = document.getElementById('pinModal');
-            // atencion_prioritaria_id = values.value;
-            modal.style.display = "block";
+            onMessage()
+            debugger
+            if (estado_atenciones[values.value] > 0) {
+                // Get the modal
+                var modal = document.getElementById('pinModal');
+                // atencion_prioritaria_id = values.value;
+                modal.style.display = "block";
 
-            //guardo el boton que lo llamo con sus valores
-            state = values;
+                //guardo el boton que lo llamo con sus valores
+                state = values;
+            }
 
         }
 
@@ -310,23 +355,27 @@
                     isPinGood=response
                     pinNumber = pin_number
                     if (state.id.indexOf('atencion') != 0 && isPinGood) {
-                        sendVisualizador(state);
-                        send(state)
+                        sendVisualizador(state, send);
                         closePinModal()
                     }
                     else if (state.id.indexOf('atencion') >= 0 && isPinGood){
                         closePinModal()
                         showModal(state)
                     }
+                    else {
+                        $('#pin-alert').html(
+                            "<div class='alert alert-warning'>"+
+                                "<strong>Pin Incorrecto</strong>"+
+                            "</div>"
+                        )
+                    }
                 },
-                function(response) {
-                // callback error
-                }
             )
 
         }
 
         function atencion_prioritaria(value) {
+
             numero_atencion_prioritaria = document.getElementById('numero_prioritario').value;
             // numero_atencion_booleano = true;
             value.value = atencion_prioritaria_id
@@ -334,6 +383,7 @@
 
             closeModal()
             atencionPrioritaria();
+
         }
 
         function valida(e){
@@ -374,6 +424,25 @@
         </div>
 
     </div>
+
+    <div id="ventana-alerta" class="modal">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" onclick="closeModal()" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Terminar Atencion</h4>
+            </div>
+            <div class="modal-body">
+                <p style="align-content: center;">Actualmente se encuentra una Atención Activa. ¿Desea Finalizarla?</p>
+                <input type='number' id='numero_prioritario' style="align-content: center;" autofocus>
+            </div>
+            <div class="modal-footer" style="align-content: center;">
+                <button type="button" onclick="atencion_prioritaria(this)" id='aceptar_atencion' class="btn btn-alert">Terminar</button>
+                <button type="button" onclick="closeModal()" id='cancelar-atencion-prioritaria' class="btn btn-default">Cancelar</button>
+            </div>
+        </div>
+
+    </div>
     <div id="pinModal" class="modal">
         <!-- Modal content-->
         <div class="modal-content">
@@ -382,6 +451,7 @@
                 <h4 class="modal-title">Ingreso de pin</h4>
             </div>
             <div class="modal-body">
+                <div id="pin-alert"></div>
                 <p style="align-content: center;">Ingrese su pin personal:</p>
                 <input type="password" onKeyPress='return valida(event)' id='pin_number' style="align-content: center;" autofocus>
             </div>
@@ -423,10 +493,10 @@
 	        		<label for="name"><h3><div id="particular_numero">{{particular_quantity}}</div></h3></label>
 	        	</div>
 
-                <div style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+                <div id='promedio-particular' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
                     Demora Promedio {{promedio_particular}}min
                 </div>
-	        	<div id='contador-particular' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+	        	<div id='contador-particular' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0"> 0
 	        	</div>
 
 	        	<div class="btn-group-vertical text-center" role="group" style="margin-top: 10px; margin-bottom: 20px;">
@@ -444,10 +514,10 @@
 	        		<label for="name"><h3><div id="obra_social_numero">{{obra_social_quantity}}</div></h3></label>
 	        	</div>
 
-                <div style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+                <div id='promedio-obra_social' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
                     Demora Promedio {{promedio_obra_social}}min
                 </div>
-	        	<div id='contador-obra_social' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+	        	<div id='contador-obra_social' value = 0 style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0"> 0
 	        	</div>
 
 	        	<div class="btn-group-vertical text-center" role="group" style="margin-top: 10px; margin-bottom: 20px;">
@@ -465,10 +535,10 @@
 	        		<label for="name"><h3><div id="pami_numero">{{pami_quantity}}</div></h3></label>
 	        	</div>
 
-                <div style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+                <div id='promedio-pami' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
                     Demora Promedio {{promedio_pami}}min
                 </div>
-	        	<div id='contador-pami' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+	        	<div id='contador-pami' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0"> 0
 
 	        	</div>
 
@@ -487,10 +557,10 @@
 	        		<label for="name"><h3><div id="perfumeria_numero">{{perfumeria_quantity}}</div></h3></label>
 	        	</div>
 
-                <div style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+                <div id='promedio-perfumeria'style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
                     Demora Promedio {{promedio_farmacia}}min
                 </div>
-	        	<div id='contador-perfumeria' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+	        	<div id='contador-perfumeria' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0"> 0
 
                 </div>
 
@@ -518,8 +588,6 @@
     </div> <!-- /container -->
 
 
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
   </body>
 </html>
 {% endblock %}

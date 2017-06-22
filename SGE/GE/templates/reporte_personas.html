@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<head>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script type="text/javascript">
+        dict = {}; // used to get the values of the page
+
+
+        function prueba() {
+            $.ajax({
+                  type: "GET",
+                  url: 'http://'+location.host+'/api/snippets/',
+                  data: data,
+                  success: console.log('hola'),
+                  dataType: console.log('nada')
+            });
+        }
+
+        $(function() {
+            $("#datepicker").datepicker();
+            $("#datepicker").datepicker("option", "dateFormat", "yy-mm-dd");
+        } );
+
+        function getRegisters(data) {
+
+            $.post(
+                'http://'+ location.host +'/api/registros/',
+                data,
+                function(data, status){
+                    debugger
+
+                    $.each(data, function (i, item) {
+                        $('#result-table tr:last').after('<tr><th scope="row">'+item.id_register+'</th><td>'+item.start_attention+'</td><td>'+item.finish_attention+'</td><td>'+item.finish_total_attention+'</td><td>'+item.duracion+'</td></tr>');
+                    });
+
+                }
+            );
+        }
+
+        getFields();
+        function getFields() {
+            $.get(
+                'http://'+ location.host +'/api/usuarios/',
+                function(data, status){
+                    $.each(data, function (i, item) {
+                        $('#pin').append($('<option>', {
+                            value: item.id_persona,
+                            text : item.last_name+', '+item.name
+                        }));
+                    });
+                }
+            );
+
+            $.get(
+                'http://'+ location.host +'/api/atenciones/',
+                function(data, status){
+                    $.each(data, function (i, item) {
+                        $('#tipo_atencion').append($('<option>', {
+                            value: item.id_attention_type,
+                            text : item.label
+                        }));
+                    });
+
+                }
+            );
+        }
+
+        function buscar() {
+            if ($('#pin').val() != "") {
+                dict['pin'] = $('#pin').val()
+            }
+            if ($('#datepicker').val() != "") {
+                dict['datepicker'] = $('#datepicker').val()
+            }
+            if ($('#tipo_atencion').val() != "") {
+                dict['tipo_atencion'] = $('#tipo_atencion').val()
+            }
+            if ($('#atencion_prioritaria').is(':checked')) {
+                dict['atencion_prioritaria'] = true
+            }
+            else {
+                dict['atencion_prioritaria'] = false
+            }
+            if ($('#duracion').val() != "") {
+                dict['duracion'] = $('#duracion').val()
+            }
+            if ($('#observaciones').is(':checked')) {
+                dict['observaciones'] = true
+            }
+            else {
+                dict['observaciones'] = false
+            }
+            getRegisters(dict);
+        }
+
+    </script>
+
+    <style type="text/css">
+    .table{
+        font-size: 13px;
+    }
+    </style>
+
+</head>
+<body style='background: #546973;'>
+    <div class='container' style='background: #546973;'>
+            <h3>Seleccione los filtros de Busqueda:</h3>
+        </div>
+        <div class="container" style="background: white;">
+            <div>
+              <p>Seleccione una Fecha: <input type="text" id="datepicker"></p>
+            </div>
+            <div>
+              <div class="row justify-content-md-center" style="margin-left: 10px;">
+                      <div class="col">
+                        <p>usuario <select id='pin' name="usuario"></select></p>
+                      </div>
+                      <div class="col">
+                        <p>tipo_atencion <select id='tipo_atencion' name="tipo_atencion"></select></p>
+                      </div>
+                      <div class="col">
+                            <div id='select-attentions'></div>
+                      </div>
+                      <div class="col">
+                        <p>atencion_prioritaria <input type="checkbox" id='atencion_prioritaria' name="atencion_prioritaria"></p>
+                      </div>
+
+                  <div class="row" style="margin-left: 10px;">
+                      <div class="col">
+                          duracion<input type="number" id='duracion' name="duracion"> en minutos
+                      </div>
+                      <div class="col">
+                          posible_no_atencion<input type="checkbox"  id='observaciones' name="posible_no_atencion">
+                      </div>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="col">
+                      <button type="button" onClick='buscar()' class="btn btn-primary">Buscar</button>
+                  </div>
+              </div>
+            </div>
+        </div>
+        <div class='container' style='background: #546973;'>
+            <h3>Resultado de Busqueda:</h3>
+        </div>
+        <div class='container' style='background: white'>
+            <table class="table" id='result-table'>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Hora Comienzo Atención</th>
+                        <th>Hora Finalizacion Atencion</th>
+                        <th>Hora Finalizacion Dispensación</th>
+                        <th>Duración Total</th>
+                    </tr>
+                </thead>
+              <tbody>
+              </tbody>
+            </table>
+        </div>
+
+</body>
+
+
+
+{% endblock %}

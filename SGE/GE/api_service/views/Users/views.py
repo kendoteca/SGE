@@ -1,14 +1,15 @@
 from GE.models import Persona, InitialAttention, Registers, AttentionType
 
-from GE.models import InitialAttention, Registers, AttentionType, SellPlace, Sucursal
+from GE.models import InitialAttention, Registers, AttentionType, SellPlace, Sucursal, Alerta
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum, Avg, Count, Max
 from django.utils import timezone
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
-from GE.api_service.serializers import RegistersSerializer, PersonaSerializers, InitialAttentionSerializers
+from GE.api_service.serializers import RegistersSerializer, AttentionTypeSerializers, InitialAttentionSerializers, PersonaSerializers, AlertaSerializers
 
 
 class JSONResponse(HttpResponse):
@@ -22,22 +23,35 @@ class JSONResponse(HttpResponse):
 
 
 @csrf_exempt
-def rgisters_list(request):
+def registros(request):
     """
     List all code snippets, or create a new snippet.
     """
+    values = {}
+
     if request.method == 'GET':
-        # snippets = Registers.objects.filter(**kwargs)
-        # serializer = RegistersSerializer(snippets, many=True)
-        # return JSONResponse(serializer.data)
-        return
-    elif request.method == 'POST':
-        data = JSONParser().parse(request)
-        serializer = RegistersSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JSONResponse(serializer.data, status=201)
-        return JSONResponse(serializer.errors, status=400)
+        snippets = Registers.objects.all()
+        import ipdb; ipdb.set_trace()
+        serializer = RegistersSerializer(snippets, many=True)
+        return JSONResponse(serializer.data, status=201)
+    if request.method == 'POST':
+        if 'pin' in request.POST:
+            values['pin_id'] = request.POST['pin']
+        if 'datepicker' in request.POST:
+            values['start_attention__contains'] = request.POST['datepicker']
+        if 'tipo_atencion' in request.POST:
+            values['attention_type'] = request.POST['tipo_atencion']
+        if 'duracion' in request.POST:
+            values['duracion__gt'] = request.POST['duracion']
+        if 'observaciones' in request.POST and request.POST['observaciones'] != 'false':
+            values['observations'] = 'Posible no atención'
+        if 'atencion_prioritaria' in request.POST and request.POST['atencion_prioritaria'] != 'false':
+            values['priority_attention'] = True
+
+        snippets = Registers.objects.filter(**values)
+        serializer = RegistersSerializer(snippets, many=True)
+
+        return JSONResponse(serializer.data, status=201)
 
 
 @csrf_exempt
@@ -161,7 +175,11 @@ def crear_registro(request):
         try:
             numero = visualizador(request).content
 
-            atencion = InitialAttention.objects.get(attention_number=numero, attention_type=att, created__contains=timezone.now().date())
+            atencion = InitialAttention.objects.get(
+                attention_number=numero,
+                attention_type=att,
+                created__contains=timezone.now().date()
+            )
 
             registro_guardado = Registers.objects.create(
                 pin=persona,
@@ -177,6 +195,8 @@ def crear_registro(request):
             serializer = RegistersSerializer(registro_guardado)
         except ValueError:
             return JSONResponse('No hay turnos para ser Atendidos!', status=400)
+        except ObjectDoesNotExist:
+            return JSONResponse('No hay turnos para ser Atendidos!', status=400)
 
     return JSONResponse(serializer.data, status=201)
 
@@ -190,6 +210,8 @@ def actualiza_registro(request, id):
         try:
             registro = Registers.objects.get(id_register=id)
             registro.finish_attention = timezone.now()
+            if (timezone.now() - registro.start_attention).seconds < 80:
+                registro.observations = 'Posible no atención'
             registro.save()
         except Exception:
             registro = None
@@ -233,36 +255,7 @@ def visualizador(request):
     """
     Número a llamar o a crear Registro
     """
-    # import ipdb; ipdb.set_trace()
-    # att = AttentionType.objects.get(name=request.POST['tipo_atencion'])
 
-    # ultimo = Registers.objects.filter(
-    #     attention_type=att,
-    #     start_attention__contains=timezone.now().date(),
-    #     priority_attention=False
-    # ).values(
-    #     'attention_type__name',
-    #     'attention_number__attention_number'
-    # ).annotate(Max('attention_number')).order_by('-attention_number')
-
-    # if len(ultimo) > 0:
-
-    #     atencion = InitialAttention.objects.filter(
-    #         attention_type=att,
-    #         attention_number__gt=ultimo['attention_number__attention_number']
-    #     )
-
-    #     cantidades = len(atencion)
-    #     llamar = 0
-
-    #     for cantidad in range(0, cantidades):
-    #         if not Registers.objects.filter(
-    #             attention_type=att,
-    #             attention_number=atencion[cantidad],
-    #             start_attention__contains=timezone.now().date()
-    #         ).exists():
-    #             llamar = atencion[cantidad].attention_number
-    #             break
     att = AttentionType.objects.get(name=request.POST['tipo_atencion'])
     hola = Registers.objects.filter(
         attention_type=att,
@@ -303,24 +296,50 @@ def visualizador(request):
                 break
         # if next_number != 0:
 
-
     return JSONResponse(next_number, status=201)
 
 
-# def promedios(request):
-#     tipo_atenciones = AttentionType.objects.values('name')
-#     try:
-#         promedio_por_tipo = Registers.objects.values('attention_type__name').annotate(Avg('duracion'))
-#         for key, value in promedio_por_tipo:
-#             dictionary[key] = value
+def promedios(request):
+    tipo_atenciones = AttentionType.objects.values('name')
+    try:
+        promedio_por_tipo = Registers.objects.values('attention_type__name').annotate(Avg('duracion'))
+        promedios = {tipo['attention_type__name']: round(tipo['duracion__avg']/60, 2) for tipo in promedio_por_tipo}
 
-#     except:
-#         promedio_por_tipo = None
+    except:
+        promedio_por_tipo = None
 
-#     for tipo_atencion in tipo_atenciones:
-#         for promedio in promedio_por_tipo:
-#             if tipo_atencion['name'] promedio
+    for tipo_atencion in tipo_atenciones:
+        if not tipo_atencion['name'] in promedios:
+            promedios[tipo_atencion['name']] = 0
+
+    return JSONResponse(promedios, status=201)
 
 
+def atenciones(request):
+    tipo_atenciones = AttentionType.objects.all()
+    serializer = AttentionTypeSerializers(tipo_atenciones, many=True)
+
+    return JSONResponse(serializer.data, status=201)
 
 
+def usuarios(request):
+    tipo_atenciones = Persona.objects.all()
+    serializer = PersonaSerializers(tipo_atenciones, many=True)
+
+    return JSONResponse(serializer.data, status=201)
+
+
+def alertas(request):
+    values = dict()
+    if request.method == 'GET':
+        alertas = Alerta.objects.all()
+        serializer = AlertaSerializers(alertas, many=True)
+
+        return JSONResponse(serializer.data, status=201)
+    elif request.method == 'POST':
+        if 'datepicker' in request.POST:
+            values['starting_alert__contains'] = request.POST['datepicker']
+        alertas = Alerta.objects.filter(**values)
+        serializer = AlertaSerializers(alertas, many=True)
+
+        return JSONResponse(serializer.data, status=201)
