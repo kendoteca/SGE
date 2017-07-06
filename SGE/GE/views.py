@@ -130,20 +130,14 @@ def home(request):
     #     created__contains=timezone.localdate(),
     #     attention_type=att_particular
     # ).count()
-
+    tipo_atenciones = AttentionType.objects.all()
+    promedios_atencion = Registers.objects.values('attention_type__name').annotate(Avg('duracion_atencion'))
     return render(request, 'atencion.html', {
         'puesto': puesto,
         'user': request.user,
-        # 'obra_social_quantity': obra_social_quantity - reg_obra,
-        # 'pami_quantity': pami_quantity - reg_pami,
-        # 'perfumeria_quantity': perfumeria_quantity - reg_perfumeria,
-        # 'particular_quantity': particular_quantity - reg_particular,
-        # 'promedio_por_tipo': promedio_por_tipo,
+        'tipo_atenciones': tipo_atenciones,
+        'promedios_atencion': promedios_atencion,
     })
-
-
-
-
 
 
 def main(request):
@@ -151,11 +145,13 @@ def main(request):
 
 
 def totem(request):
-    return render(request, 'totem.html', {})
+    tipo_atenciones = AttentionType.objects.all()
+    return render(request, 'totem.html', {'tipo_atenciones': tipo_atenciones})
 
 
 def visualizador(request):
-    return render(request, 'visualizador.html', {})
+    tipo_atenciones = AttentionType.objects.all()
+    return render(request, 'visualizador.html', {'tipo_atenciones': tipo_atenciones})
 
 
 def registros(request):
@@ -204,7 +200,6 @@ def data(request):
     return render(request, 'totem.html', {})
 
 
-@login_required()
 def signup(request):
     if request.method == 'POST':  # If the form has been submitted...
         form = SignUpForm(request.POST)  # A form bound to the POST data

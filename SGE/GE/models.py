@@ -1,21 +1,23 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 
 
 class Persona(models.Model):
     id_persona = models.AutoField(primary_key=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    email = models.CharField(max_length=50)
     pin = models.IntegerField()
 
     def check_pin(self, pin_ingresado):
         return self.pin == pin_ingresado
 
     def __str__(self):
-        return '{}, {}'.format(self.user.last_name, self.user.first_name)
+        return '{}, {}'.format(self.last_name, self.first_name)
 
 
 class Configuration(models.Model):
@@ -24,6 +26,7 @@ class Configuration(models.Model):
     generar_alarma_con_cantidad = models.IntegerField()
     email_destino = models.CharField(max_length=50)
     email = models.CharField(max_length=50)
+    sonido_totem = models.BooleanField()
 
 
 class ConfiguracionesEstandar(models.Model):
@@ -74,6 +77,8 @@ class Alerta(models.Model):
         default=timezone.now
     )
 
+    observations = models.TextField()
+
     finish_alert = models.DateTimeField(
         blank=True,
         null=True
@@ -108,7 +113,11 @@ class Registers(models.Model):
 
     finish_total_attention = models.DateTimeField(blank=True, null=True)
 
-    duracion = models.IntegerField(default=0)
+    duracion = models.DecimalField(default=0, decimal_places=2, max_digits=4)
+
+    duracion_atencion = models.DecimalField(default=0, decimal_places=2, max_digits=4)
+
+    tiempo_espera = models.DecimalField(default=0, decimal_places=2, max_digits=4)
 
     sellplace = models.ForeignKey(SellPlace)
 

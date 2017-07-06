@@ -13,7 +13,6 @@
 
     <h1>Elegant Contact Form</h1> -->
 <style type="text/css">
-    @import url(https://fonts.googleapis.com/css?family=Roboto:400,300,600,400italic);
 * {
   margin: 0;
   padding: 0;
@@ -28,7 +27,7 @@
 }
 
 body {
-  font-family: "Roboto", Helvetica, Arial, sans-serif;
+  font-family: Arial;
   font-weight: 100;
   font-size: 12px;
   line-height: 30px;
@@ -158,8 +157,15 @@ fieldset {
   color: #888;
 }
 </style>
+<script type="text/javascript">
+  function atencionMasiva() {
+      fetch('http://'+location.host+'/api/atencion_masiva/', {mode: 'cors'})
+    }
+</script>
 <div class="container">
 {{message}}
+
+
   <form id="contact" action="{% url 'final' %}" method="post">
     <h3>Finalización Turno</h3>
     <div class="alert alert-{{alert}}" style="visibility: {{show_message}}">
@@ -171,6 +177,10 @@ fieldset {
     <fieldset>
       <button name="submit" type="submit" id="contact-submit" data-submit="...Sending">Completar</button>
     </fieldset>
+    <div>
+      Para realizar la Atención Masiva haga click aquí
+      <input type='button' onClick="atencionMasiva()" value="Atención Masiva">
+    </div>
     <p class="copyright">Soluciones Informáticas</p>
   </form>
 </div>

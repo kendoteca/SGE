@@ -30,10 +30,28 @@
                 'http://'+ location.host +'/api/registros/',
                 data,
                 function(data, status){
-                    debugger
+                    var val = '<h3>Resultado de Busqueda:</h3>\
+                    <table class="table" id="result-table">\
+                        <thead>\
+                            <tr>\
+                                <th>#</th>\
+                                <th>Hora Creación Turno</th>\
+                                <th>Hora Comienzo Atención</th>\
+                                <th>Hora Finalizacion Atencion</th>\
+                                <th>Hora Finalizacion Dispensación</th>\
+                                <th>Tiempo de Espera</th>\
+                                <th>Duración Atención</th>\
+                                <th>Duración Total</th>\
+                            </tr>\
+                        </thead>\
+                      <tbody>\
+                      </tbody>\
+                    </table>'
+
+                    $('#tabla').html(val)
 
                     $.each(data, function (i, item) {
-                        $('#result-table tr:last').after('<tr><th scope="row">'+item.id_register+'</th><td>'+item.start_attention+'</td><td>'+item.finish_attention+'</td><td>'+item.finish_total_attention+'</td><td>'+item.duracion+'</td></tr>');
+                        $('#result-table tr:last').after('<tr><th scope="row">'+item.id_register+'</th><td>'+new Date(item.created).toLocaleString()+'</td><td>'+new Date(item.start_attention).toLocaleString()+'</td><td>'+new Date(item.finish_attention).toLocaleString()+'</td><td>'+item.finish_total_attention+'</td><td>'+item.tiempo_espera+'</td><td>'+item.duracion_atencion+'</td><td>'+item.duracion+'</td></tr>');
                     });
 
                 }
@@ -48,7 +66,7 @@
                     $.each(data, function (i, item) {
                         $('#pin').append($('<option>', {
                             value: item.id_persona,
-                            text : item.last_name+', '+item.name
+                            text : item.last_name+', '+item.first_name
                         }));
                     });
                 }
@@ -99,69 +117,50 @@
     </script>
 
     <style type="text/css">
-    .table{
-        font-size: 13px;
-    }
+        .table{
+            font-size: 13px;
+        }
+        #filter button{
+          margin-bottom: 10px;
+        }
+        #filter th{
+          padding-bottom: 10px;
+        }
     </style>
 
 </head>
 <body style='background: #546973;'>
-    <div class='container' style='background: #546973;'>
-            <h3>Seleccione los filtros de Busqueda:</h3>
-        </div>
-        <div class="container" style="background: white;">
-            <div>
-              <p>Seleccione una Fecha: <input type="text" id="datepicker"></p>
-            </div>
-            <div>
-              <div class="row justify-content-md-center" style="margin-left: 10px;">
-                      <div class="col">
-                        <p>usuario <select id='pin' name="usuario"></select></p>
-                      </div>
-                      <div class="col">
-                        <p>tipo_atencion <select id='tipo_atencion' name="tipo_atencion"></select></p>
-                      </div>
-                      <div class="col">
-                            <div id='select-attentions'></div>
-                      </div>
-                      <div class="col">
-                        <p>atencion_prioritaria <input type="checkbox" id='atencion_prioritaria' name="atencion_prioritaria"></p>
-                      </div>
-
-                  <div class="row" style="margin-left: 10px;">
-                      <div class="col">
-                          duracion<input type="number" id='duracion' name="duracion"> en minutos
-                      </div>
-                      <div class="col">
-                          posible_no_atencion<input type="checkbox"  id='observaciones' name="posible_no_atencion">
-                      </div>
-                  </div>
-              </div>
-              <div class="row">
-                  <div class="col">
-                      <button type="button" onClick='buscar()' class="btn btn-primary">Buscar</button>
-                  </div>
-              </div>
-            </div>
-        </div>
-        <div class='container' style='background: #546973;'>
-            <h3>Resultado de Busqueda:</h3>
-        </div>
-        <div class='container' style='background: white'>
-            <table class="table" id='result-table'>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Hora Comienzo Atención</th>
-                        <th>Hora Finalizacion Atencion</th>
-                        <th>Hora Finalizacion Dispensación</th>
-                        <th>Duración Total</th>
-                    </tr>
-                </thead>
-              <tbody>
-              </tbody>
-            </table>
-        </div>
+    <div class="container" style="background: white; border-radius: 10px; width: 500px; margin-top: 50px">
+        <h3>Seleccione los filtros de Busqueda:</h3>
+        <table id='filter'>
+            <thead>
+                <tr>
+                    <th>Seleccione una Fecha <input type="text" id="datepicker"></th>
+                </tr>
+                <tr>
+                    <th>Usuario <select id='pin' name="usuario"></select></th>
+                </tr>
+                <tr>
+                    <th>Tipo de Atención <select id='tipo_atencion' name="tipo_atencion"></select></th>
+                </tr>
+                <tr>
+                    <th>Atención Prioritaria <input type="checkbox" id='atencion_prioritaria' name="atencion_prioritaria"></th>
+                </tr>
+                <tr>
+                    <th>Duración <input type="number" id='duracion' name="duracion"> en minutos</th>
+                </tr>
+                <tr>
+                    <th>Posibles no Atenciones <input type="checkbox"  id='observaciones' name="posible_no_atencion"></th>
+                </tr>
+                <tr>
+                    <th><button type="button" style="margin-top: 20px" onClick='buscar()' class="btn btn-primary btn-lg btn-block">Buscar</button></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <br />
+    <div class='container' style='background: white' id='tabla'>
+    </div>
 
 </body>
 

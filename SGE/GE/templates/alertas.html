@@ -25,13 +25,28 @@
         } );
 
         function getRegisters(data) {
+            var val = '<h3>Resultado de Busqueda:</h3>\
+                    <table class="table" id="result-table">\
+                        <thead>\
+                            <tr>\
+                                <th>#</th>\
+                                <th>Hora Comienzo Alerta</th>\
+                                <th>Hora Finalizacion Alerta</th>\
+                                <th>Estado</th>\
+                            </tr>\
+                        </thead>\
+                      <tbody>\
+                      </tbody>\
+                    </table>';
+
+            $('#tabla').html(val)
 
             $.post(
                 'http://'+ location.host +'/api/alertas/',
                 data,
                 function(data, status){
                     $.each(data, function (i, item) {
-                        $('#result-table tr:last').after('<tr><th scope="row">'+item.id_alerta+'</th><td>'+item.starting_alert+'</td><td>'+item.finish_alert+'</td></tr>');
+                        $('#result-table tr:last').after('<tr><th scope="row">'+item.id_alerta+'</th><td>'+new Date(item.starting_alert).toLocaleString()+'</td><td>'+new Date(item.finish_alert).toLocaleString()+'</td><td>'+item.observations+'</td></tr>');
                     });
 
                 }
@@ -48,44 +63,35 @@
     </script>
 
     <style type="text/css">
-    .table{
-        font-size: 13px;
-    }
+        .table{
+            font-size: 13px;
+        }
+        #filter button{
+          margin-bottom: 10px;
+        }
+        #filter th{
+          padding-bottom: 10px;
+        }
     </style>
 
 </head>
 <body style='background: #546973;'>
-    <div class='container' style='background: #546973;'>
-            <h3>Seleccione los filtros de Busqueda:</h3>
-        </div>
-        <div class="container" style="background: white;">
-            <div>
-              <p>Seleccione una Fecha: <input type="text" id="datepicker"></p>
-            </div>
-            <div>
-              <div class="row">
-                  <div class="col">
-                      <button type="button" onClick='buscar()' class="btn btn-primary">Buscar</button>
-                  </div>
-              </div>
-            </div>
-        </div>
-        <div class='container' style='background: #546973;'>
-            <h3>Resultado de Busqueda:</h3>
-        </div>
-        <div class='container' style='background: white'>
-            <table class="table" id='result-table'>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Hora Comienzo Alerta</th>
-                        <th>Hora Finalizacion Alerta</th>
-                    </tr>
-                </thead>
-              <tbody>
-              </tbody>
-            </table>
-        </div>
+    <div class="container" style="background: white; border-radius: 10px; width: 500px; margin-top: 50px">
+        <h3>Seleccione los filtros de Busqueda:</h3>
+        <table id='filter'>
+            <thead>
+                <tr>
+                    <th>Seleccione una Fecha <input type="text" id="datepicker"></th>
+                </tr>
+                <tr>
+                    <th><button type="button" style="margin-top: 20px" onClick='buscar()' class="btn btn-primary btn-lg btn-block">Buscar</button></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <br />
+    <div class='container' id='tabla' style='background: white'>
+    </div>
 
 </body>
 

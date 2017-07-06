@@ -97,7 +97,7 @@
             vis = vis + minuti + ":";
             if(secondi < 10) vis = vis + "0";
             vis = vis + secondi + ":" + decimi;
-
+            debugger
             document.getElementById("contador-"+value).innerHTML = vis;
         }
         function stop_timmer() {
@@ -128,47 +128,80 @@
         var atencion_activa = false;
         var tipo_atencion_activa = '';
 
+        var atenciones = [
+            {% for tipo_atencion in tipo_atenciones %}
+                '{{tipo_atencion.name}}',
+            {% endfor %}
+        ]
+
+        var promedios = {
+            {% for promedio in promedios_atencion %}
+                '{{promedio.attention_type__name|safe}}': {{promedio.duracion_atencion__avg|safe}},
+            {% endfor %}
+        }
+
 		function send(e) {
 
             if (terminar) {
                 // contador(e);
                 creaRegistro(e);
                 if (status != 'error') {
-                    start(e.value)
-                    $('#atender_'+e.value).replaceWith('<button type="button" id="atender_'+e.value+'" onclick="send(this)" value="'+e.value+'" class="btn btn-danger btn-sm">Terminar</button>')
+                    // start(e.value)
+                    $('#atender_'+e.value).replaceWith('<button type="button" id="atender_terminar_'+e.value+'" onclick="send(this)" value="'+e.value+'" class="btn btn-danger btn-sm">Terminar</button>')
                     terminar = false;
                     atencion_activa = true;
                     tipo_atencion_activa = e.value;
+                    blockButtons(e.value)
 
                 }
             }
             else {
-                $('#atender_'+e.value).replaceWith('<button type="button" id="atender_'+e.value+'" onclick="showPinModal(this)" value="'+e.value+'" class="btn btn-primary btn-sm">LLamar y Atender</button>')
+                $('#atender_terminar_'+e.value).replaceWith('<button type="button" id="atender_'+e.value+'" onclick="showPinModal(this)" value="'+e.value+'" class="btn btn-primary btn-sm">LLamar y Atender</button>')
                 stop_timmer();
-                end(e.value);
+                // end(e.value);
                 actualizaRegistro()
                 terminar = true;
                 atencion_activa = true;
+                unlockButtons()
             }
         }
 
-        function sendVisualizador(e, send) {
-            let text = e.value;
+        function blockButtons(value) {
+            atenciones.forEach(function(tipo) {
+                debugger
+                if (value == tipo) {
+                    document.getElementById("atencion_"+tipo).disabled = true;
+                }
+                else {
+                    document.getElementById("atencion_"+tipo).disabled = true;
+                    document.getElementById("atender_"+tipo).disabled = true;
+                }
+            });
+        }
 
-            if (text == "") {
-                return
-            }
+        function unlockButtons() {
+            atenciones.forEach(function(tipo) {
+                document.getElementById("atencion_"+tipo).disabled = false;
+                document.getElementById("atender_"+tipo).disabled = false;
+            });
+        }
+
+        function sendVisualizador(attention_number, attention_type) {
+            // let text = e.value;
+
+            // if (text == "") {
+            //     return
+            // }
 
             let message = {
                 type: 'message',
-                text: text,
+                text: attention_type,
+                attention_number: attention_number,
                 user: 'visualizador',
                 puesto: puesto
             }
             // send message
             this.socket.send(JSON.stringify(message));
-
-            send(e);
 
         }
 
@@ -205,27 +238,39 @@
         }
 
         function actualizarEstados(data) {
-            $('#obra_social_numero').html(data.obra_social);
-            $('#particular_numero').html(data.particular);
-            $('#pami_numero').html(data.pami);
-            $('#perfumeria_numero').html(data.perfumeria);
+            atenciones.forEach(function(tipo) {
+                $('#'+tipo+'_numero').html(data[tipo]);
+            });
         }
 
         function actualizaPromedios(data) {
-            debugger
-            $('#promedio-obra_social').html('Demora Promedio <br />' + data.obra_social + ' min');
-            $('#promedio-particular').html('Demora Promedio <br />' + data.particular + ' min');
-            $('#promedio-pami').html('Demora Promedio <br />' + data.pami + ' min');
-            $('#promedio-perfumeria').html('Demora Promedio <br />' + data.perfumeria + ' min');
+            atenciones.forEach(function(tipo) {
+                var promedio_tipo = promedios[tipo].toString().match(/^-?\d+(?:\.\d{0,2})?/)[0]
+                $('#promedio-'+tipo).html('Demora Promedio <br />' + promedio_tipo + ' min');
+            });
         }
 
-        var estado_atenciones = new Numeros(0, 0, 0, 0);
-        function Numeros(obra_social, particular, pami, perfumeria) {
-            this.obra_social = obra_social;
-            this.particular = particular;
-            this.pami = pami;
-            this.perfumeria = perfumeria;
-        }
+        // var numeros_vacios = Array()
+        // atenciones.forEach(function(tipo) {
+        //     numeros_vacios.push(0)
+        // });
+        // var estado_atenciones = new Numeros(numeros_vacios);
+
+        dict_estados = {};
+
+        atenciones.forEach(function(tipo) {
+            dict_estados[tipo] = 0;
+        });
+
+        // function Numeros() {
+        //     // this.obra_social = obra_social;
+        //     // this.particular = particular;
+        //     // this.pami = pami;
+        //     // this.perfumeria = perfumeria;
+        //     // atenciones.forEach(function(tipo) {
+        //     //     [tipo] = 0
+        //     // });
+        // }
 
         onMessage()
         function onMessage() {
@@ -233,23 +278,25 @@
                 'http://'+ location.host +'/api/consulta_estado/',
                 function(data, status){
                     actualizarEstados(data);
-                    estado_atenciones.obra_social=data.obra_social;
-                    estado_atenciones.pami=data.pami;
-                    estado_atenciones.particular=data.particular;
-                    estado_atenciones.perfumeria=data.perfumeria;
+                    $.each(data, function(index, value) {
+                        dict_estados[index] = value
+                    });
                 }
             );
         }
 
         function creaRegistro(e) {
-
+            debugger
             $.post(
                 'http://'+ location.host +'/api/crear_registro/',
                 {
                     pin: pinNumber,
-                    tipo_atencion: e.value
+                    tipo_atencion: e.value,
+                    observaciones: ''
                 },
                 function(data, status){
+                    $('#numero_llamado_'+ data.attention_type).html('Número en atención:<br /><b>'+ data.attention_number +'</b>')
+                    sendVisualizador(data.attention_number, data.attention_type);
                     status = status
                     onMessage();
 
@@ -283,10 +330,11 @@
                     numero_atencion: numero_atencion_prioritaria
                 },
                 function(data, status) {
-                    start(state.value)
-                    $('#atender_'+state.value).replaceWith('<button type="button" id="atender_'+state.value+'" onclick="send(this)" value="'+state.value+'" class="btn btn-danger btn-sm">Terminar</button>')
+                    // start(state.value)
+                    $('#atender_'+state.value).replaceWith('<button type="button" id="atender_terminar_'+state.value+'" onclick="send(this)" value="'+state.value+'" class="btn btn-danger btn-sm">Terminar</button>')
                     terminar = false;
-                    registerId = data.id_register
+                    blockButtons(state.value);
+                    registerId = data.id_register;
                     onMessage();
                 }
             );
@@ -304,6 +352,8 @@
             var modal = document.getElementById('myModal');
             atencion_prioritaria_id = values.value;
 
+            $('#numero_prioritario').focus();
+
             modal.style.display = "block";
         }
 
@@ -317,12 +367,18 @@
         function showPinModal(values) {
             onMessage()
             debugger
-            if (estado_atenciones[values.value] > 0) {
+            document.getElementById("pin_number").focus();
+            document.getElementById("numero_prioritario").focus();
+
+            if (dict_estados[values.value] > 0) {
                 // Get the modal
                 var modal = document.getElementById('pinModal');
+
+
                 // atencion_prioritaria_id = values.value;
                 modal.style.display = "block";
 
+                $('#pin_number').focus();
                 //guardo el boton que lo llamo con sus valores
                 state = values;
             }
@@ -349,14 +405,14 @@
 
             pin_number = document.getElementById('pin_number').value
             document.getElementById('pin_number').value=''
-            $.getJSON(
-                'http://'+location.host+'/api/user_pin/'+pin_number+'/ ',
-                function(response){
-                    isPinGood=response
+
+            fetch('http://'+location.host+'/api/user_pin/'+pin_number+'/ ', {mode: 'cors'})
+                .then(function(response) {
+                    isPinGood=response.ok
                     pinNumber = pin_number
+                    debugger
                     if (state.id.indexOf('atencion') != 0 && isPinGood) {
-                        sendVisualizador(state, send);
-                        closePinModal()
+                        closePinModal();
                     }
                     else if (state.id.indexOf('atencion') >= 0 && isPinGood){
                         closePinModal()
@@ -369,8 +425,50 @@
                             "</div>"
                         )
                     }
-                },
-            )
+                })
+                .then(function(response) {
+                    console.log('Request successful');
+                    if (state.id.indexOf('atencion') != 0 && isPinGood) {
+                        send(state);
+                    }
+                    else if (state.id.indexOf('atencion') >= 0 && isPinGood){
+                        closePinModal()
+                        showModal(state)
+                    }
+                    else {
+                        $('#pin-alert').html(
+                            "<div class='alert alert-warning'>"+
+                                "<strong>Pin Incorrecto</strong>"+
+                            "</div>"
+                        )
+                    }
+
+                })
+                .catch(function(error) {
+                    console.log('Se ha producido un problema al identificar el pin!')
+                });
+            // $.getJSON(
+            //     'http://'+location.host+'/api/user_pin/'+pin_number+'/ ',
+            //     function(response){
+            //         isPinGood=response
+            //         pinNumber = pin_number
+                    // if (state.id.indexOf('atencion') != 0 && isPinGood) {
+                    //     sendVisualizador(state, send);
+                    //     closePinModal()
+                    // }
+                    // else if (state.id.indexOf('atencion') >= 0 && isPinGood){
+                    //     closePinModal()
+                    //     showModal(state)
+                    // }
+                    // else {
+                    //     $('#pin-alert').html(
+                    //         "<div class='alert alert-warning'>"+
+                    //             "<strong>Pin Incorrecto</strong>"+
+                    //         "</div>"
+                    //     )
+                    // }
+            //     },
+            // )
 
         }
 
@@ -393,11 +491,20 @@
             if (tecla==8){
                 return true;
             }
-
+            if (event.keyCode == 13) {
+                $("#aceptar_pin").click();
+            }
             // Patron de entrada, en este caso solo acepta numeros
             patron =/[0-9]/;
             tecla_final = String.fromCharCode(tecla);
             return patron.test(tecla_final);
+        }
+
+        function enterFocus(){
+            if (event.keyCode == 13) {
+                $("#aceptar_atencion").click();
+            }
+            return
         }
 
      </script>
@@ -415,7 +522,7 @@
             </div>
             <div class="modal-body">
                 <p style="align-content: center;">Ingrese el número del Cliente:</p>
-                <input type='number' id='numero_prioritario' style="align-content: center;" autofocus>
+                <input type='number' onKeyPress='enterFocus(event)' id='numero_prioritario' style="align-content: center;" autofocus>
             </div>
             <div class="modal-footer" style="align-content: center;">
                 <button type="button" onclick="atencion_prioritaria(this)" id='aceptar_atencion' class="btn btn-default">Aceptar</button>
@@ -425,24 +532,6 @@
 
     </div>
 
-    <div id="ventana-alerta" class="modal">
-        <!-- Modal content-->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" onclick="closeModal()" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Terminar Atencion</h4>
-            </div>
-            <div class="modal-body">
-                <p style="align-content: center;">Actualmente se encuentra una Atención Activa. ¿Desea Finalizarla?</p>
-                <input type='number' id='numero_prioritario' style="align-content: center;" autofocus>
-            </div>
-            <div class="modal-footer" style="align-content: center;">
-                <button type="button" onclick="atencion_prioritaria(this)" id='aceptar_atencion' class="btn btn-alert">Terminar</button>
-                <button type="button" onclick="closeModal()" id='cancelar-atencion-prioritaria' class="btn btn-default">Cancelar</button>
-            </div>
-        </div>
-
-    </div>
     <div id="pinModal" class="modal">
         <!-- Modal content-->
         <div class="modal-content">
@@ -477,99 +566,38 @@
         <h4>Sistema de Atención al Cliente</h4>
       	<form action="{% url 'home' %}" method="post">
       	<div class="row" align="center">
-	        <div class="col-lg-2" style="border: black light solid; box-shadow: 5px 5px 3px #DADEDD; border-radius: 10px; background-color: #E3F6CE">
+	        <div class="col-lg-2 col-md-2" style="border: black light solid; box-shadow: 5px 5px 3px #DADEDD; border-radius: 10px; background-color: #E3F6CE; margin-right: 30px">
 				<div>
 					<h3>Puesto:</h3>
                     <h2 align="center">{{puesto}}</h2>
 
 				</div>
 	        </div>
-	        <div class="col-lg-2 text-center" style="border: #cdcdcd medium solid; background-color: #cdcdcd; margin-left: 30px" >
-	        	<div>
-	        		<label for="name">Particular (Sin receta)</label>
-	        	</div>
+            {% for tipo_atencion in tipo_atenciones %}
+    	        <div class="col-lg-2 col-md-2 text-center" style="border: #cdcdcd medium solid; background-color: #cdcdcd;" >
+    	        	<div>
+    	        		<label for="name">{{ tipo_atencion.label }}</label>
+    	        	</div>
 
-	        	<div style="border: #cdcdcd medium solid; margin-top: 2px; border-radius: 15px; background-color: white" class='text-center'>
-	        		<label for="name"><h3><div id="particular_numero">{{particular_quantity}}</div></h3></label>
-	        	</div>
+    	        	<div style="border: #cdcdcd medium solid; margin-top: 2px; border-radius: 15px; background-color: white" class='text-center'>
+    	        		<label for="name"><h3><div id="{{ tipo_atencion.name }}_numero">{{particular_quantity}}</div></h3></label>
+    	        	</div>
 
-                <div id='promedio-particular' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
-                    Demora Promedio {{promedio_particular}}min
-                </div>
-	        	<div id='contador-particular' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0"> 0
-	        	</div>
+                    <div id='promedio-{{ tipo_atencion.name }}' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
+                        Demora Promedio {{promedio_particular}}min
+                    </div>
+    	        	<div id='numero_llamado_{{ tipo_atencion.name }}' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">Número en atención:<br /><b>0</b>
+                    </div>
+                    <!-- <div id='contador-{{ tipo_atencion.name }}' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0"> 0
+    	        	</div> -->
 
-	        	<div class="btn-group-vertical text-center" role="group" style="margin-top: 10px; margin-bottom: 20px;">
-                    <button type="button" onclick="showPinModal(this)" id='atender_particular' value='particular' class="btn btn-primary btn-sm">LLamar y Atender</button>
-	        		<!-- <button type="button" onclick="send(this)" id='atender_particular' value='particular' class="btn btn-success btn-sm">Atender</button> -->
-	        		<button type="button" onclick="showPinModal(this)" id="atencion-particular" value="particular" class="btn btn-warning btn-sm">Atencion Prioritaria</button>
-	        	</div>
-	        </div>
-	        <div class="col-lg-2 text-center" style="border: #cdcdcd medium solid; background-color: #cdcdcd">
-	        	<div>
-	        		<label for="name">Obra Sociales</label>
-	        	</div>
-
-	        	<div style="border: #cdcdcd medium solid; margin-top: 2px; border-radius: 15px; background-color: white" class='text-center'>
-	        		<label for="name"><h3><div id="obra_social_numero">{{obra_social_quantity}}</div></h3></label>
-	        	</div>
-
-                <div id='promedio-obra_social' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
-                    Demora Promedio {{promedio_obra_social}}min
-                </div>
-	        	<div id='contador-obra_social' value = 0 style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0"> 0
-	        	</div>
-
-	        	<div class="btn-group-vertical text-center" role="group" style="margin-top: 10px; margin-bottom: 20px;">
-                    <button type="button" onclick="showPinModal(this)" id='atender_obra_social' value='obra_social' class="btn btn-primary btn-sm">LLamar y Atender</button>
-	        		<!-- <button type="button" onclick="send(this)" id='atender_obra_social' value='obra_social' class="btn btn-success btn-sm">Atender</button> -->
-	        		<button type="button" onclick="showPinModal(this)" id="atencion_obra_social" value="obra_social" class="btn btn-warning btn-sm">Atencion Prioritaria</button>
-	        	</div>
-	        </div>
-	        <div class="col-lg-2 text-center" style="border: #cdcdcd medium solid; background-color: #cdcdcd">
-	        	<div>
-	        		<label for="name">PAMI</label>
-	        	</div>
-
-	        	<div style="border: #cdcdcd medium solid; margin-top: 2px; border-radius: 15px; background-color: white" class='text-center'>
-	        		<label for="name"><h3><div id="pami_numero">{{pami_quantity}}</div></h3></label>
-	        	</div>
-
-                <div id='promedio-pami' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
-                    Demora Promedio {{promedio_pami}}min
-                </div>
-	        	<div id='contador-pami' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0"> 0
-
-	        	</div>
-
-	        	<div class="btn-group-vertical text-center" role="group" style="margin-top: 10px; margin-bottom: 20px;">
-                    <button type="button" onclick="showPinModal(this)" id='atender_pami' value='pami' class="btn btn-primary btn-sm">LLamar y Atender</button>
-	        		<!-- <button type="button" onclick="send(this)" id='atender_pami' value='pami' class="btn btn-success btn-sm">Atender</button> -->
-	        		<button type="button" onclick="showPinModal(this)" id="atencion_pami" value="pami" class="btn btn-warning btn-sm">Atencion Prioritaria</button>
-	        	</div>
-	        </div>
-	        <div class="col-lg-2 text-center" style="border: #cdcdcd medium solid; background-color: #cdcdcd">
-	        	<div>
-	        		<label for="name">Perfumeria</label>
-	        	</div>
-
-	        	<div style="border: #cdcdcd medium solid; margin-top: 2px; border-radius: 15px; background-color: white" class='text-center'>
-	        		<label for="name"><h3><div id="perfumeria_numero">{{perfumeria_quantity}}</div></h3></label>
-	        	</div>
-
-                <div id='promedio-perfumeria'style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0">
-                    Demora Promedio {{promedio_farmacia}}min
-                </div>
-	        	<div id='contador-perfumeria' style="border: #cdcdcd medium solid; border-radius: 10px; background-color: #1AC9A0"> 0
-
-                </div>
-
-	        	<div class="btn-group-vertical text-center" role="group" style="margin-top: 10px; margin-bottom: 20px;">
-                    <button type="button" onclick="showPinModal(this)" id='atender_perfumeria' value='perfumeria' class="btn btn-primary btn-sm">LLamar y Atender</button>
-	        		<!-- <button type="button" onclick="send(this)" id='atender_perfumeria' value='perfumeria' class="btn btn-success btn-sm">Atender</button> -->
-	        		<button type="button" onclick="showPinModal(this)" id="atencion_perfumeria" value="perfumeria" class="btn btn-warning btn-sm">Atencion Prioritaria</button>
-	        	</div>
-	        </div>
+    	        	<div class="btn-group-vertical text-center" role="group" style="margin-top: 10px; margin-bottom: 20px;">
+                        <button type="button" onclick="showPinModal(this)" id='atender_{{ tipo_atencion.name }}' value='{{ tipo_atencion.name }}' class="btn btn-primary btn-sm">LLamar y Atender</button>
+    	        		<!-- <button type="button" onclick="send(this)" id='atender_particular' value='particular' class="btn btn-success btn-sm">Atender</button> -->
+    	        		<button type="button" onclick="showPinModal(this)" id="atencion_{{ tipo_atencion.name }}" value="{{ tipo_atencion.name }}" class="btn btn-warning btn-sm">Atencion Prioritaria</button>
+    	        	</div>
+    	        </div>
+            {% endfor %}
 	    </div>
 
       <div class="row" style="margin-top: 20px;">
@@ -582,7 +610,7 @@
 
 
 <!--       <footer class="footer">
-        <p>&copy; Hecho por Pablo Ovejero en asosiacion con Mario Reale</p>
+        <p>&copy; Hecho por Pablo Ovejero en asosiación con Mario Reale</p>
       </footer> -->
 
     </div> <!-- /container -->

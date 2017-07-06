@@ -26,110 +26,58 @@ def on_disconnect(message):
         _('User %(user)s left chat') % message.channel_session))
 
 
-def check_alert():
-
-    turnos = len(InitialAttention.objects.filter(
-        created__contains=timezone.localdate()
-    ))
-
-    registros = len(Registers.objects.filter(
-        start_attention__gt=timezone.localdate()
-    ))
-    difference = turnos - registros
-    configurations = Configuration.objects.all()[0]
-
-    alerta = Alerta.objects.filter(
-        starting_alert__contains=timezone.localdate(),
-        finish_alert=None,
-    ).exists()
-    from django.core.mail import send_mail
-    if difference >= configurations.generar_alarma_con_cantidad and not alerta:
-        Alerta.objects.create(
-            starting_alert=timezone.now(),
-            finish_alert=None,
-            sellplace=SellPlace.objects.get(id_sellplace=1),
-            sucursal=Sucursal.objects.get(id_sucursal=1)
-        )
-
-        send_mail(
-            'ALERTA ATENCION SUCURSAL Santa Ana N12',
-            configurations.email,
-            'pepe@intento.com',
-            [configurations.email_destino],
-            fail_silently=False
-        )
-    elif difference < configurations.generar_alarma_con_cantidad and alerta:
-        update_alert = Alerta.objects.get(
-            starting_alert__contains=timezone.localdate(),
-            finish_alert=None,
-        )
-
-        send_mail(
-            'ALERTA ATENCION SUCURSAL Santa Ana N12',
-            'La Alerta a Finalizado. Se inicializo a las {} y finalizo a las {}'.format(
-                update_alert.starting_alert,
-                timezone.now()
-            ),
-            'pepe@intento.com',
-            [configurations.email_destino],
-            fail_silently=False
-        )
-
-        update_alert.finish_alert = timezone.now()
-
-        update_alert.save()
-
-
 @channel_session
 def on_message(message):
     payload = message.content['text']
     user = message.channel_session['user']
     if message.content['text']['user'] == 'visualizador':
         puesto = message.content['text']['puesto']
+        attention_number = message.content['text']['attention_number']
+        attention_type = message.content['text']['text']
 
-        att = AttentionType.objects.get(name=message.content['text']['text'])
-        hola = Registers.objects.filter(
-            attention_type=att,
-            priority_attention=False,
-            start_attention__gt=timezone.now().date()
-        )
-        number_to_be_attend = ''
-        next_number = 0
-        # import ipdb; ipdb.set_trace()
+        # att = AttentionType.objects.get(name=message.content['text']['text'])
+        # hola = Registers.objects.filter(
+        #     attention_type=att,
+        #     priority_attention=False,
+        #     start_attention__gt=timezone.now().date()
+        # )
+        # number_to_be_attend = ''
+        # next_number = 0
+        # # import ipdb; ipdb.set_trace()
 
-        if len(hola) == 0:
-            lolo = InitialAttention.objects.filter(
-                attention_type=att,
-                created__gt=timezone.now().date()
-            ).order_by('id_initial_attention')[0]
+        # if len(hola) == 0:
+        #     lolo = InitialAttention.objects.filter(
+        #         attention_type=att,
+        #         created__gt=timezone.now().date()
+        #     ).order_by('id_initial_attention')[0]
 
-            next_number = lolo.attention_number
-        else:
+        #     next_number = lolo.attention_number
+        # else:
 
-            last = hola.order_by('-id_register')[0]
-            check_number = len(InitialAttention.objects.filter(
-                attention_number__gt=last.attention_number.attention_number,
-                attention_type=att,
-                created__gt=timezone.now().date()
-            ))
-            import ipdb; ipdb.set_trace()
-            for number in range(1, check_number+1):
-                number_to_be_attend = InitialAttention.objects.get(
-                    attention_number=last.attention_number.attention_number+number,
-                    attention_type=att,
-                    created__gt=timezone.now().date()
-                )
-                if not Registers.objects.filter(
-                    attention_number=number_to_be_attend,
-                    attention_type=att,
-                    start_attention__contains=timezone.now().date()
-                ).exists():
-                    next_number = last.attention_number.attention_number+number
-                    break
+        #     last = hola.order_by('-id_register')[0]
+        #     check_number = len(InitialAttention.objects.filter(
+        #         attention_number__gt=last.attention_number.attention_number,
+        #         attention_type=att,
+        #         created__gt=timezone.now().date()
+        #     ))
+
+        #     for number in range(1, check_number+1):
+        #         number_to_be_attend = InitialAttention.objects.get(
+        #             attention_number=last.attention_number.attention_number+number,
+        #             attention_type=att,
+        #             created__gt=timezone.now().date()
+        #         )
+        #         if not Registers.objects.filter(
+        #             attention_number=number_to_be_attend,
+        #             attention_type=att,
+        #             start_attention__gt=timezone.now().date()
+        #         ).exists():
+        #             next_number = last.attention_number.attention_number+number
+        #             break
 
         message.content['text']['text'] = '{},{},{}'.format(
-            att.name,
-            next_number,
+            attention_type,
+            attention_number,
             puesto
         )
 

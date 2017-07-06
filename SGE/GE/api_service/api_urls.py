@@ -3,6 +3,7 @@ from GE.api_service.views.Users import views
 
 urlpatterns = [
     url(r'^registros/$', views.registros),
+    url(r'^atencion_masiva/$', views.atencion_masiva),
     url(r'^snippets/(?P<pk>[0-9]+)/$', views.registers_detail),
     url(r'^user_pin/(?P<pk>[0-9]+)/$', views.user_pin),
     url(r'^crear_turno/$', views.crear_turno),

@@ -3,6 +3,17 @@ from GE.models import Registers, Persona, InitialAttention, AttentionType, Alert
 
 
 class RegistersSerializer(serializers.ModelSerializer):
+    attention_number = serializers.PrimaryKeyRelatedField(
+        read_only=True, source='attention_number.attention_number',
+    )
+    attention_type = serializers.PrimaryKeyRelatedField(
+        read_only=True, source='attention_type.name',
+    )
+
+    created = serializers.PrimaryKeyRelatedField(
+        read_only=True, source='attention_number.created',
+    )
+
     class Meta:
         model = Registers
         fields = '__all__'
@@ -15,16 +26,6 @@ class RegistersSerializer(serializers.ModelSerializer):
 
 
 class PersonaSerializers(serializers.ModelSerializer):
-
-    name = serializers.PrimaryKeyRelatedField(
-        read_only=True, source='user.first_name',
-        default=serializers.CurrentUserDefault()
-    )
-
-    last_name = serializers.PrimaryKeyRelatedField(
-        read_only=True, source='user.last_name',
-        default=serializers.CurrentUserDefault()
-    )
 
     class Meta:
         model = Persona

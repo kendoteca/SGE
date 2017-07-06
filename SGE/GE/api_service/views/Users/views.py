@@ -1,6 +1,8 @@
+
+import requests
 from GE.models import Persona, InitialAttention, Registers, AttentionType
 
-from GE.models import InitialAttention, Registers, AttentionType, SellPlace, Sucursal, Alerta
+from GE.models import Configuration, InitialAttention, Registers, AttentionType, SellPlace, Sucursal, Alerta
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum, Avg, Count, Max
@@ -22,6 +24,62 @@ class JSONResponse(HttpResponse):
         super(JSONResponse, self).__init__(content, **kwargs)
 
 
+def check_alert():
+
+    turnos = len(InitialAttention.objects.filter(
+        created__contains=timezone.now().date()
+    ))
+
+    registros = len(Registers.objects.filter(
+        start_attention__gt=timezone.now().date()
+    ))
+    difference = turnos - registros
+    configurations = Configuration.objects.all()[0]
+
+    alerta = Alerta.objects.filter(
+        starting_alert__contains=timezone.now().date(),
+        finish_alert=None,
+    ).exists()
+    from django.core.mail import send_mail
+    if difference >= configurations.generar_alarma_con_cantidad and not alerta:
+        estados = consulta_estado()
+        Alerta.objects.create(
+            starting_alert=timezone.now(),
+            observations=estados.content,
+            finish_alert=None,
+            sellplace=SellPlace.objects.get(id_sellplace=1),
+            sucursal=Sucursal.objects.get(id_sucursal=1)
+        )
+
+        send_mail(
+            'ALERTA DE ATENCIONES',
+            'Se a generado un alerta a las {}, con la siguiente informacion: {}'.format(timezone.now(), estados.content),
+            'pepe@intento.com',
+            [configurations.email_destino],
+            fail_silently=False
+        )
+    elif difference < configurations.generar_alarma_con_cantidad and alerta:
+        update_alert = Alerta.objects.get(
+            starting_alert__contains=timezone.now().date(),
+            finish_alert=None,
+        )
+
+        send_mail(
+            'BAJA DE ALERTA EN SUCURSAL',
+            'La Alerta a Finalizado. Se inicializo a las {} y finalizo a las {}'.format(
+                update_alert.starting_alert,
+                timezone.now()
+            ),
+            'pepe@intento.com',
+            [configurations.email_destino],
+            fail_silently=False
+        )
+
+        update_alert.finish_alert = timezone.now()
+
+        update_alert.save()
+
+
 @csrf_exempt
 def registros(request):
     """
@@ -31,17 +89,16 @@ def registros(request):
 
     if request.method == 'GET':
         snippets = Registers.objects.all()
-        import ipdb; ipdb.set_trace()
         serializer = RegistersSerializer(snippets, many=True)
         return JSONResponse(serializer.data, status=201)
     if request.method == 'POST':
-        if 'pin' in request.POST:
+        if 'pin' in request.POST and request.POST['pin'] != '':
             values['pin_id'] = request.POST['pin']
-        if 'datepicker' in request.POST:
+        if 'datepicker' in request.POST and request.POST['datepicker'] != '':
             values['start_attention__contains'] = request.POST['datepicker']
         if 'tipo_atencion' in request.POST:
             values['attention_type'] = request.POST['tipo_atencion']
-        if 'duracion' in request.POST:
+        if 'duracion' in request.POST and request.POST['duracion'] != '':
             values['duracion__gt'] = request.POST['duracion']
         if 'observaciones' in request.POST and request.POST['observaciones'] != 'false':
             values['observations'] = 'Posible no atención'
@@ -125,40 +182,39 @@ def crear_turno(request):
                 created=timezone.now()
             )
         serializer = InitialAttentionSerializers(initial_atention)
-
+        check_alert()
         return JSONResponse(serializer.data, status=201)
 
 
 @csrf_exempt
-def consulta_estado(request):
+def consulta_estado(request=None):
     """
     consulta estados de turnos...
     """
 
-    if request.method == 'GET':
-        estado = dict()
-        tipo_atenciones = AttentionType.objects.values('name')
-        try:
-            registros = Registers.objects.filter(start_attention__contains=timezone.now().date()).values('attention_type__name').annotate(Count('attention_number'))
-        except Exception:
-            registros = None
+    estado = dict()
+    tipo_atenciones = AttentionType.objects.values('name')
+    try:
+        registros = Registers.objects.filter(start_attention__contains=timezone.now().date()).values('attention_type__name').annotate(Count('attention_number'))
+    except Exception:
+        registros = None
 
-        try:
-            atenciones = InitialAttention.objects.filter(created__contains=timezone.now().date()).values('attention_type__name').annotate(Count('attention_number'))
-        except Exception:
-            atenciones = None
+    try:
+        atenciones = InitialAttention.objects.filter(created__contains=timezone.now().date()).values('attention_type__name').annotate(Count('attention_number'))
+    except Exception:
+        atenciones = None
 
-        for atencion in atenciones:
-            for registro in registros:
-                if registro['attention_type__name'] == atencion['attention_type__name']:
-                    tipo_estado = registro['attention_type__name']
-                    estado[tipo_estado] = atencion['attention_number__count'] - registro['attention_number__count']
+    for atencion in atenciones:
+        for registro in registros:
+            if registro['attention_type__name'] == atencion['attention_type__name']:
+                tipo_estado = registro['attention_type__name']
+                estado[tipo_estado] = atencion['attention_number__count'] - registro['attention_number__count']
 
-        for tipo_atencion in tipo_atenciones:
-            if not tipo_atencion['name'] in estado:
-                    estado[tipo_atencion['name']] = atenciones.get(attention_type__name=tipo_atencion['name'])['attention_number__count'] \
-                        if atenciones.filter(attention_type__name=tipo_atencion['name']).exists() else \
-                        0
+    for tipo_atencion in tipo_atenciones:
+        if not tipo_atencion['name'] in estado:
+                estado[tipo_atencion['name']] = atenciones.get(attention_type__name=tipo_atencion['name'])['attention_number__count'] \
+                    if atenciones.filter(attention_type__name=tipo_atencion['name']).exists() else \
+                    0
 
     return JSONResponse(estado, status=201)
 
@@ -168,6 +224,7 @@ def crear_registro(request):
     """
     Crea registro de turnos...
     """
+
     if request.method == 'POST':
         att = AttentionType.objects.get(name=request.POST['tipo_atencion'])
         if request.POST['pin']:
@@ -187,8 +244,9 @@ def crear_registro(request):
                 priority_attention=False,
                 attention_type=att,
                 start_attention=timezone.now(),
-                observations=request.POST['tipo_atencion'] if 'tipo_atencion' in request.POST else '',
+                observations=request.POST['observaciones'] if request.POST['observaciones'] else '',
                 finish_attention=timezone.now(),
+                tiempo_espera=(timezone.now()-atencion.created).seconds / 60,
                 sellplace=SellPlace.objects.get(id_sellplace=1),
                 sucursal=Sucursal.objects.get(id_sucursal=1),
             )
@@ -212,6 +270,7 @@ def actualiza_registro(request, id):
             registro.finish_attention = timezone.now()
             if (timezone.now() - registro.start_attention).seconds < 80:
                 registro.observations = 'Posible no atención'
+            registro.duracion_atencion = (timezone.now() - registro.start_attention).seconds / 60
             registro.save()
         except Exception:
             registro = None
@@ -343,3 +402,12 @@ def alertas(request):
         serializer = AlertaSerializers(alertas, many=True)
 
         return JSONResponse(serializer.data, status=201)
+
+
+def atencion_masiva(request):
+    atentions = InitialAttention.objects.filter(created__gt=timezone.now().date())
+    for atention in atentions:
+        if not Registers.objects.filter(attention_number=atention).exists():
+            requests.post('http://localhost:8000/api/crear_registro/', data={'pin': '1', 'tipo_atencion': atention.attention_type.name, 'observaciones': 'Atencion Masiva'})
+
+    return JSONResponse(status=201)

@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load static %}
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -41,49 +40,32 @@
             vid.play();
         }
 
+        var atenciones = {
+            {% for tipo_atencion in tipo_atenciones %}
+                '{{tipo_atencion.name}}': '{{tipo_atencion.label}}',
+            {% endfor %}
+        };
+
         function modal(e) {
             // Get the modal
             let data=JSON.parse(e.data).text.split(',')
             var modal = document.getElementById('myModal');
-            let tipo;
-
 
             if (data.length > 1 && JSON.parse(e.data).user=='atencion') {
                 playAudio()
+                var att = atenciones[data[0]];
+                var tipo = att.label;
 
-                if(data[0]=='obra_social') {
-                    tipo = 'OBRA SOCIAL';
+                $("#"+data[0]+"-numero").text(data[1]);
+                $("#"+data[0]+"-puesto").text(data[2]);
 
-                    $("#obra_social-numero").text(data[1]);
-                    $("#obra_social-puesto").text(data[2]);
-                }
-                else if (data[0]=='particular'){
-                    tipo = 'PARTICULAR';
-
-                    $("#particular-numero").text(data[1]);
-                    $("#particular-puesto").text(data[2]);
-                }
-                else if (data[0]=='pami'){
-                    tipo = 'PAMI';
-
-                    $("#pami-numero").text(data[1]);
-                    $("#pami-puesto").text(data[2]);
-                }
-                else if (data[0]=='perfumeria'){
-                    tipo = 'PERFUMERIA';
-
-                    $("#perfumeria-numero").text(data[1]);
-                    $("#perfumeria-puesto").text(data[2]);
-                }
-
-                $("#tipo").text(tipo);
+                $("#tipo").text(att);
                 $("#nros").text('Nro: ' + data[1] + '   -   Puesto: ' + data[2]);
                 modal.style.display = "block";
                 // Get the <span> element that closes the modal
                 var span = document.getElementsByClassName("close")[0];
 
                 // When the user clicks on the button, open the modal
-
 
                 // When the user clicks on <span> (x), close the modal
                 setTimeout(function() { modal.style.display = "none";}, 10000);
@@ -232,50 +214,19 @@
                         <h2>Puesto</h2>
                     </div>
                 </div>
-                <div class='row'>
-                    <div class='col-md-6'>
-                        <h1>PERFUMERIA</h1>
+                {% for tipo_atencion in tipo_atenciones %}
+                    <div class='row'>
+                        <div class='col-md-6'>
+                            <h1>{{ tipo_atencion.label }}</h1>
+                        </div>
+                        <div class='col-md-3'>
+                            <h1><span id='{{ tipo_atencion.name }}-numero'>-</span></h1>
+                        </div>
+                        <div class='col-md-3'>
+                            <h1><span id='{{ tipo_atencion.name }}-puesto'>-</span></h1>
+                        </div>
                     </div>
-                    <div class='col-md-3'>
-                        <h1><span id='perfumeria-numero'>-</span></h1>
-                    </div>
-                    <div class='col-md-3'>
-                        <h1><span id='perfumeria-puesto'>-</span></h1>
-                    </div>
-                </div>
-                <div class='row'>
-                    <div class='col-md-6'>
-                        <h1>PARTICULAR</h1>
-                    </div>
-                    <div class='col-md-3'>
-                        <h1><span id='particular-numero'>-</span></h1>
-                    </div>
-                    <div class='col-md-3'>
-                        <h1><span id='particular-puesto'>-</span></h1>
-                    </div>
-                </div>
-                <div class='row'>
-                    <div class='col-md-6'>
-                        <h1>PAMI</h1>
-                    </div>
-                    <div class='col-md-3'>
-                        <h1><span id='pami-numero'>-</span></h1>
-                    </div>
-                    <div class='col-md-3'>
-                        <h1><span id='pami-puesto'>-</span></h1>
-                    </div>
-                </div>
-                <div class='row'>
-                    <div class='col-md-6'>
-                        <h1>OBRA SOCIAL</h1>
-                    </div>
-                    <div class='col-md-3'>
-                        <h1><span id='obra_social-numero'>-</span></h1>
-                    </div>
-                    <div class='col-md-3'>
-                        <h1><span id='obra_social-puesto'>-</span></h1>
-                    </div>
-                </div>
+                {% endfor %}
 
             </div>
             <div class='col-md-6'>
