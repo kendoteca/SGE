@@ -157,6 +157,7 @@
             }
             else {
                 $('#atender_terminar_'+e.value).replaceWith('<button type="button" id="atender_'+e.value+'" onclick="showPinModal(this)" value="'+e.value+'" class="btn btn-primary btn-sm">LLamar y Atender</button>')
+                $('#numero_llamado_'+ e.value).html('Número en atención:<br /><b> - </b>')
                 stop_timmer();
                 // end(e.value);
                 actualizaRegistro()
@@ -337,7 +338,11 @@
                     registerId = data.id_register;
                     onMessage();
                 }
-            );
+            )
+            .fail(function() {
+               status = 'El número ingresado ya fue atendido'
+               alert(status)
+            });
         }
 
         // Modal
@@ -427,7 +432,6 @@
                     }
                 })
                 .then(function(response) {
-                    console.log('Request successful');
                     if (state.id.indexOf('atencion') != 0 && isPinGood) {
                         send(state);
                     }
@@ -447,28 +451,6 @@
                 .catch(function(error) {
                     console.log('Se ha producido un problema al identificar el pin!')
                 });
-            // $.getJSON(
-            //     'http://'+location.host+'/api/user_pin/'+pin_number+'/ ',
-            //     function(response){
-            //         isPinGood=response
-            //         pinNumber = pin_number
-                    // if (state.id.indexOf('atencion') != 0 && isPinGood) {
-                    //     sendVisualizador(state, send);
-                    //     closePinModal()
-                    // }
-                    // else if (state.id.indexOf('atencion') >= 0 && isPinGood){
-                    //     closePinModal()
-                    //     showModal(state)
-                    // }
-                    // else {
-                    //     $('#pin-alert').html(
-                    //         "<div class='alert alert-warning'>"+
-                    //             "<strong>Pin Incorrecto</strong>"+
-                    //         "</div>"
-                    //     )
-                    // }
-            //     },
-            // )
 
         }
 

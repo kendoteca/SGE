@@ -39,6 +39,7 @@ class ConfiguracionesEstandar(models.Model):
 class Promotion(models.Model):
     id_promotion = models.AutoField(primary_key=True)
     promotion_message = models.CharField(max_length=50)
+    promotion_selected = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.promotion_message)

@@ -1,8 +1,17 @@
 
 import requests
-from GE.models import Persona, InitialAttention, Registers, AttentionType
 
-from GE.models import Configuration, InitialAttention, Registers, AttentionType, SellPlace, Sucursal, Alerta
+from GE.models import (
+    Alerta,
+    AttentionType,
+    Configuration,
+    InitialAttention,
+    Persona,
+    Promotion,
+    Registers,
+    SellPlace,
+    Sucursal,
+)
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum, Avg, Count, Max
@@ -11,7 +20,14 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
-from GE.api_service.serializers import RegistersSerializer, AttentionTypeSerializers, InitialAttentionSerializers, PersonaSerializers, AlertaSerializers
+from GE.api_service.serializers import (
+    AlertaSerializers,
+    AttentionTypeSerializers,
+    InitialAttentionSerializers,
+    PersonaSerializers,
+    PromotionSerializers,
+    RegistersSerializer,
+)
 
 
 class JSONResponse(HttpResponse):
@@ -53,7 +69,7 @@ def check_alert():
 
         send_mail(
             'ALERTA DE ATENCIONES',
-            'Se a generado un alerta a las {}, con la siguiente informacion: {}'.format(timezone.now(), estados.content),
+            'Se ha generado un alerta a las {}, con la siguiente información: {}'.format(timezone.now(), estados.content),
             'pepe@intento.com',
             [configurations.email_destino],
             fail_silently=False
@@ -66,7 +82,7 @@ def check_alert():
 
         send_mail(
             'BAJA DE ALERTA EN SUCURSAL',
-            'La Alerta a Finalizado. Se inicializo a las {} y finalizo a las {}'.format(
+            'La Alerta ha Finalizado. Se inicializo a las {} y finalizo a las {}'.format(
                 update_alert.starting_alert,
                 timezone.now()
             ),
@@ -96,7 +112,7 @@ def registros(request):
             values['pin_id'] = request.POST['pin']
         if 'datepicker' in request.POST and request.POST['datepicker'] != '':
             values['start_attention__contains'] = request.POST['datepicker']
-        if 'tipo_atencion' in request.POST:
+        if 'tipo_atencion' in request.POST and request.POST['tipo_atencion'] != 'todos':
             values['attention_type'] = request.POST['tipo_atencion']
         if 'duracion' in request.POST and request.POST['duracion'] != '':
             values['duracion__gt'] = request.POST['duracion']
@@ -147,7 +163,8 @@ def user_pin(request, pk):
     try:
         snippet = Persona.objects.get(pin=pk)
     except Persona.DoesNotExist:
-        return HttpResponse('false', content_type='application/json')
+        return JSONResponse('No hay usuarios para ser Atendidos!', status=400)
+        # return HttpResponse('false', content_type='application/json')
 
     if request.method == 'GET':
         return JSONResponse(snippet.check_pin(int(pk)))
@@ -257,6 +274,48 @@ def crear_registro(request):
             return JSONResponse('No hay turnos para ser Atendidos!', status=400)
 
     return JSONResponse(serializer.data, status=201)
+
+
+@csrf_exempt
+def agregar_promociones(request):
+    """
+    Crea promocion...
+    """
+    if request.method == 'POST':
+        try:
+            registro_guardado = Promotion.objects.create(
+                promotion_message=request.POST['promocion']
+            )
+            serializer = PromotionSerializers(registro_guardado)
+        except ValueError:
+            return JSONResponse('No hay turnos para ser Atendidos!', status=400)
+        except ObjectDoesNotExist:
+            return JSONResponse('No hay turnos para ser Atendidos!', status=400)
+
+    return JSONResponse(serializer.data, status=201)
+
+
+@csrf_exempt
+def seleccionar_promocion(request):
+    """
+    actualiza un registro y le pone la hora de finalizacion...
+    """
+
+    registros = Promotion.objects.all()
+    for registro in registros:
+        if request.method == 'POST':
+            try:
+                if request.POST['value'] == str(registro.id_promotion):
+                    registro.promotion_selected = 1
+                    registro.save()
+                else:
+                    registro.promotion_selected = 0
+                    registro.save()
+            except Exception:
+                registro = None
+
+    # serializer = PromotionSerializers(registros)
+    return JSONResponse(status=201)
 
 
 @csrf_exempt
@@ -381,6 +440,13 @@ def atenciones(request):
     return JSONResponse(serializer.data, status=201)
 
 
+def get_promociones(request):
+    promociones = Promotion.objects.all()
+    serializer = PromotionSerializers(promociones, many=True)
+
+    return JSONResponse(serializer.data, status=201)
+
+
 def usuarios(request):
     tipo_atenciones = Persona.objects.all()
     serializer = PersonaSerializers(tipo_atenciones, many=True)
@@ -405,9 +471,17 @@ def alertas(request):
 
 
 def atencion_masiva(request):
+
     atentions = InitialAttention.objects.filter(created__gt=timezone.now().date())
     for atention in atentions:
         if not Registers.objects.filter(attention_number=atention).exists():
-            requests.post('http://localhost:8000/api/crear_registro/', data={'pin': '1', 'tipo_atencion': atention.attention_type.name, 'observaciones': 'Atencion Masiva'})
+            requests.post(
+                'http://{}/api/crear_registro/'.format(request.POST['host']),
+                data={
+                    'pin': '1',
+                    'tipo_atencion': atention.attention_type.name,
+                    'observaciones': 'Atencion Masiva'
+                }
+            )
 
     return JSONResponse(status=201)

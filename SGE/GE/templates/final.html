@@ -158,8 +158,21 @@ fieldset {
 }
 </style>
 <script type="text/javascript">
-  function atencionMasiva() {
-      fetch('http://'+location.host+'/api/atencion_masiva/', {mode: 'cors'})
+    function atencionMasiva() {
+        fetch('http://'+location.host+'/api/atencion_masiva/', {
+            method: 'post',
+            headers: {
+              "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            body: 'host='+location.host}
+        )
+    }
+
+    function alerta() {
+        var r = confirm("¿Está seguro que desea continuar?");
+        if (r == true) {
+            atencionMasiva()
+        }
     }
 </script>
 <div class="container">
@@ -179,7 +192,7 @@ fieldset {
     </fieldset>
     <div>
       Para realizar la Atención Masiva haga click aquí
-      <input type='button' onClick="atencionMasiva()" value="Atención Masiva">
+      <input type='button' onClick="alerta()" value="Atención Masiva">
     </div>
     <p class="copyright">Soluciones Informáticas</p>
   </form>

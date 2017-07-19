@@ -65,15 +65,18 @@
                 // Get the <span> element that closes the modal
                 var span = document.getElementsByClassName("close")[0];
 
-                // When the user clicks on the button, open the modal
+                if (modal.style.display !== "none") {
+                    clearTimeout(this.sarasa);
+                }
 
-                // When the user clicks on <span> (x), close the modal
-                setTimeout(function() { modal.style.display = "none";}, 10000);
+                this.sarasa = setTimeout(function() { modal.style.display = "none";}, 10000);
+
                 span.onclick = function() {
                     modal.style.display = "none";
                 }
             }
         }
+
 
         function connect() {
             let username = 'visualizador'
@@ -94,6 +97,7 @@
         }
         connect();
         $(window).load(function() {
+            debugger
             playVid();
         });
      </script>
@@ -253,7 +257,6 @@
           <h1 align='center'><span id='nros' class="parpadea text">-</span></h1>
         </div>
         <div class="modal-footer">
-          <h3><p>Aguarde, en un Instante lo llamaremos!.</p></h3>
         </div>
       </div>
 

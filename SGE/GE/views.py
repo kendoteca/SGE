@@ -11,7 +11,12 @@ from django.http.response import HttpResponseRedirect
 from django.db.models import Sum, Avg
 
 from .forms import SignUpForm, Configurations
-from GE.models import InitialAttention, Registers, AttentionType
+from GE.models import (
+    AttentionType,
+    InitialAttention,
+    Promotion,
+    Registers,
+)
 from django.utils import timezone
 
 turno = {
@@ -146,7 +151,15 @@ def main(request):
 
 def totem(request):
     tipo_atenciones = AttentionType.objects.all()
-    return render(request, 'totem.html', {'tipo_atenciones': tipo_atenciones})
+    promotion = Promotion.objects.get(promotion_selected=1)
+    return render(
+        request,
+        'totem.html',
+        {
+            'tipo_atenciones': tipo_atenciones,
+            'promocion': promotion
+        }
+    )
 
 
 def visualizador(request):
@@ -154,10 +167,12 @@ def visualizador(request):
     return render(request, 'visualizador.html', {'tipo_atenciones': tipo_atenciones})
 
 
+@login_required()
 def registros(request):
     return render(request, 'registros.html', {})
 
 
+@login_required()
 def menu(request):
     return render(request, 'menu.html', {})
 
@@ -173,6 +188,11 @@ def login(request):
     if request.method == 'POST':
         try:
             user = User.objects.get(username=request.POST['username'])
+            if user.is_staff:
+                from django.contrib.auth import authenticate, login
+                autenticated_user = authenticate(username=user.username, password=request.POST['password'])
+                login(request, autenticated_user)
+                return HttpResponseRedirect(reverse('menu'))
             if user.check_password(request.POST['password']):
                 from django.contrib.auth import authenticate, login
                 autenticated_user = authenticate(username=user.username, password=request.POST['password'])
@@ -232,6 +252,7 @@ def signup(request):
     return render(request, 'signup.html', data)
 
 
+@login_required()
 def configurations(request):
     form = Configurations()
 
@@ -241,12 +262,22 @@ def configurations(request):
     return render(request, 'configurations.html', data)
 
 
+@login_required()
 def personas(request):
     return render(request, 'reporte_personas.html')
 
 
+@login_required()
 def alertas(request):
     return render(request, 'alertas.html')
 
-def prueba(request):
-    return render(request, 'prueba.html')
+
+def promociones(request):
+    promociones = Promotion.objects.all()
+    return render(
+        request,
+        'promociones.html',
+        {
+            'promociones': promociones,
+        }
+    )

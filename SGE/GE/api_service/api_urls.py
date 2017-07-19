@@ -13,6 +13,9 @@ urlpatterns = [
     url(r'^atencion_prioritaria/$', views.atencion_prioritaria),
     url(r'^visualizador/$', views.visualizador),
     url(r'^promedios/$', views.promedios),
+    url(r'^get_promociones/$', views.get_promociones),
+    url(r'^agregar_promociones/$', views.agregar_promociones),
+    url(r'^seleccionar_promocion/$', views.seleccionar_promocion),
     url(r'^atenciones/$', views.atenciones),
     url(r'^usuarios/$', views.usuarios),
     url(r'^alertas/$', views.alertas)
