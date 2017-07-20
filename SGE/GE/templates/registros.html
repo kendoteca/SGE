@@ -39,6 +39,7 @@
                         <thead>\
                             <tr>\
                                 <th>#</th>\
+                                <th>Usuario</th>\
                                 <th>Hora Creación Turno</th>\
                                 <th>Hora Comienzo Atención</th>\
                                 <th>Hora Finalizacion Atencion</th>\
@@ -55,7 +56,7 @@
                     $('#tabla').html(val)
 
                     $.each(data, function (i, item) {
-                        $('#result-table tr:last').after('<tr><th scope="row">'+item.id_register+'</th><td>'+new Date(item.created).toLocaleString()+'</td><td>'+new Date(item.start_attention).toLocaleString()+'</td><td>'+new Date(item.finish_attention).toLocaleString()+'</td><td>'+item.finish_total_attention+'</td><td>'+item.tiempo_espera+'</td><td>'+item.duracion_atencion+'</td><td>'+item.duracion+'</td></tr>');
+                        $('#result-table tr:last').after('<tr><th scope="row">'+item.id_register+'</th><td>'+item.pin+'</td><td>'+new Date(item.created).toLocaleString()+'</td><td>'+new Date(item.start_attention).toLocaleString()+'</td><td>'+new Date(item.finish_attention).toLocaleString()+'</td><td>'+item.finish_total_attention+'</td><td>'+item.tiempo_espera+'</td><td>'+item.duracion_atencion+'</td><td>'+item.duracion+'</td></tr>');
                     });
 
                 }

@@ -14,6 +14,11 @@ class RegistersSerializer(serializers.ModelSerializer):
         read_only=True, source='attention_number.created',
     )
 
+    pin = serializers.PrimaryKeyRelatedField(
+        read_only=True, source='pin.last_name',
+    )
+
+
     class Meta:
         model = Registers
         fields = '__all__'
