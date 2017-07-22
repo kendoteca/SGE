@@ -18,6 +18,10 @@ class RegistersSerializer(serializers.ModelSerializer):
         read_only=True, source='pin.last_name',
     )
 
+    name = serializers.PrimaryKeyRelatedField(
+        read_only=True, source='pin.first_name',
+    )
+
 
     class Meta:
         model = Registers
