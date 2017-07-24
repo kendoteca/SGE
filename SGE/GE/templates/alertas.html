@@ -49,8 +49,15 @@
                 'http://'+ location.host +'/api/alertas/',
                 data,
                 function(data, status){
+                    var finish_alert_date;
                     $.each(data, function (i, item) {
-                        $('#result-table tr:last').after('<tr><th scope="row">'+item.id_alerta+'</th><td>'+new Date(item.starting_alert).toLocaleString()+'</td><td>'+new Date(item.finish_alert).toLocaleString()+'</td><td>'+item.observations+'</td></tr>');
+                        if (!!item.finish_alert) {
+                            finish_alert_date = new Date(item.finish_alert).toLocaleString()
+                        }
+                        else {
+                            finish_alert_date = '-'
+                        }
+                        $('#result-table tr:last').after('<tr><th scope="row">'+item.id_alerta+'</th><td>'+new Date(item.starting_alert).toLocaleString()+'</td><td>'+finish_alert_date+'</td><td>'+item.observations+'</td></tr>');
                     });
 
                 }
