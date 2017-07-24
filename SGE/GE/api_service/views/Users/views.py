@@ -1,5 +1,7 @@
 
+from decimal import Decimal
 import requests
+
 
 from GE.models import (
     Alerta,
@@ -263,7 +265,7 @@ def crear_registro(request):
                 start_attention=timezone.now(),
                 observations=request.POST['observaciones'] if request.POST['observaciones'] else '',
                 finish_attention=timezone.now(),
-                tiempo_espera=(timezone.now()-atencion.created).seconds / 60,
+                tiempo_espera=Decimal(format((timezone.now()-atencion.created).seconds / 60, '.1f')),
                 sellplace=SellPlace.objects.get(id_sellplace=1),
                 sucursal=Sucursal.objects.get(id_sucursal=1),
             )

@@ -56,24 +56,8 @@
                 var att = atenciones[data[0]];
                 var tipo = att.label;
 
-                // $("#"+data[0]+"-numero").text(data[1]);
-                // $("#"+data[0]+"-puesto").text(data[2]);
-                debugger
-                $('b').contents().unwrap();
-                $('#llamados').children().last().remove()
-                var hola = $('#llamados')[0].innerHTML
-                var llamados_viejos = '<div class="row">\
-                        <div class="col-md-6">\
-                            <h1><b>'+att+'</b></h1>\
-                        </div>\
-                        <div class="col-md-3">\
-                            <h1><b>'+data[1]+'</b></h1>\
-                        </div>\
-                        <div class="col-md-3">\
-                            <h1><b>'+data[2]+'</b></h1>\
-                        </div>\
-                    </div>'
-                $('#llamados').html(llamados_viejos+hola)
+                $("#"+data[0]+"-numero").text(data[1]);
+                $("#"+data[0]+"-puesto").text(data[2]);
 
                 $("#tipo").text(att);
                 $("#nros").text('Nro: ' + data[1] + '   -   Puesto: ' + data[2]);
@@ -217,9 +201,9 @@
 
 </head>
 <body style='background-color: #A9F5BC'>
-    <div class='container' style='margin-top: 50px; margin-left: 30px; margin-right: -10px'>
-        <div class='row' style='margin-right: -240px'>
-            <img src="{% static "/santa_ana.png" %}" class="img-responsive" >
+    <div class='container' style='margin-top: 100px;'>
+        <div class='row'>
+            <img src="{% static "/santa_ana.png" %}" class="img-responsive" alt="Cinque Terre">
         </div>
         <div class='row' style='height: 300px; text-align: center'>
             <div class='col-md-6' style='background-color: white;'>
@@ -234,30 +218,28 @@
                         <h2>Puesto</h2>
                     </div>
                 </div>
-                <div id='llamados'>
-                    {% for x in loop %}
-                        <div class='row'>
-                            <div class='col-md-6' style='width: 240%;'>
-                                <h2></h2>
-                            </div>
-                            <div class='col-md-3' style='width: 240%;'>
-                                <h2> </h2>
-                            </div>
-                            <div class='col-md-3' style='width: 240%;'>
-                                <h2> </h2>
-                            </div>
+                {% for tipo_atencion in tipo_atenciones %}
+                    <div class='row'>
+                        <div class='col-md-6'>
+                            <h1>{{ tipo_atencion.label }}</h1>
                         </div>
-                    {% endfor %}
-                </div>
+                        <div class='col-md-3'>
+                            <h1><span id='{{ tipo_atencion.name }}-numero'>-</span></h1>
+                        </div>
+                        <div class='col-md-3'>
+                            <h1><span id='{{ tipo_atencion.name }}-puesto'>-</span></h1>
+                        </div>
+                    </div>
+                {% endfor %}
 
             </div>
-            <div class='col-md-6' style='margin-top: 20px;'>
-                <video id="myVideo" width="800" height="420" loop autoplay controls>
+            <div class='col-md-6'>
+                <video id="myVideo" width="550" height="340" loop autoplay controls>
                     <source src="{% static "/video.mp4" %}" type="video/mp4">
                 </video>
             </div>
         </div>
-        <div class='row' style="background-color: #088A08; margin-right: -240px"></div>
+        <div class='row' style="margin-top: 10px; background-color: #088A08;">Derechos reservados.</div>
     </div>
     <div id="app" class='container' style='border-radius: 20px; background-color: #A9D0F5; margin-top: 60px;'>
     </div>

@@ -164,7 +164,14 @@ def totem(request):
 
 def visualizador(request):
     tipo_atenciones = AttentionType.objects.all()
-    return render(request, 'visualizador.html', {'tipo_atenciones': tipo_atenciones})
+    return render(
+        request,
+        'visualizador.html',
+        {
+            'tipo_atenciones': tipo_atenciones,
+            'loop': range(1, 8)
+        }
+    )
 
 
 @login_required()
@@ -270,6 +277,9 @@ def personas(request):
 @login_required()
 def alertas(request):
     return render(request, 'alertas.html')
+
+def prueba(request):
+    return render(request, 'prueba.html')
 
 
 def promociones(request):
