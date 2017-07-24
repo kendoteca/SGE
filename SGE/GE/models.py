@@ -25,8 +25,8 @@ class Configuration(models.Model):
     promocion_aleatoria = models.BooleanField()
     generar_alarma_con_cantidad = models.IntegerField()
     email_destino = models.CharField(max_length=50)
-    email = models.CharField(max_length=50)
     sonido_totem = models.BooleanField()
+    visualizador_standard = models.BooleanField(default=False)
 
 
 class ConfiguracionesEstandar(models.Model):

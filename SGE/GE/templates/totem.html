@@ -23,6 +23,8 @@
     <script type="text/javascript" src="{% static "/jquery-barcode.js" %}"></script>
 
     <script>
+
+        var configAudio = {{ config.sonido_totem|yesno:'1,0' }}
         $(function(){
          eval(Babel.transform($('script[type="text/babel"]').text(), {
              presets: ['es2015', 'react', 'stage-0']
@@ -74,47 +76,6 @@
                 var data=JSON.parse(e.data).text.split(',')
                 var user=JSON.parse(e.data).user
                 var sender=data[0]
-                // if (data.length > 1 && user=='totem') {
-                //     if(data[0]=='obra_social') {
-                //         numero = parseInt($('#obra_social_numero').html())
-                //         $('#obra_social_numero').html(numero+1);
-                //     }
-                //     else if (data[0]=='particular'){
-                //        numero = parseInt($('#particular_numero').html())
-                //         $('#particular_numero').html(numero+1);
-                //     }
-                //     else if (data[0]=='pami'){
-                //         numero = parseInt($('#pami_numero').html())
-                //         $('#pami_numero').html(numero+1);
-                //     }
-                //     else if (data[0]=='perfumeria'){
-                //         numero = parseInt($('#perfumeria_numero').html())
-                //         $('#perfumeria_numero').html(numero+1);
-                //     }
-                // }
-                // else if (data.length > 1 && sender=='cantidad') {
-                //     if(data[1]=='obra_social') {
-                //         numero = parseInt($('#obra_social_numero').html())
-                //         $('#obra_social_numero').html(numero-1);
-                //     }
-                //     else if (data[1]=='particular'){
-                //         numero = parseInt($('#particular_numero').html())
-                //         $('#particular_numero').html(numero-1);
-                //     }
-                //     else if (data[1]=='pami'){
-                //         numero = parseInt($('#pami_numero').html())
-                //         $('#pami_numero').html(numero-1);
-                //     }
-                //     else if (data[1]=='perfumeria'){
-                //         numero = parseInt($('#perfumeria_numero').html())
-                //         $('#perfumeria_numero').html(numero-1);
-                //     }
-                // }
-
-                // if(user=='visualizador') {
-                //     numero_llamado = data
-                // }
-
             }
             socket.onopen = () => {
                 socket.send(JSON.stringify({
@@ -134,7 +95,9 @@
                     },
                     function(data, status){
                         sendInformationToChannel()
-                        playAudio()
+                        if (configAudio) {
+                            playAudio()
+                        }
                         createBarCode(data['attention_type'], data['attention_number']);
                         setAttentionType(data['attention_number'], label);
                         printbox();
@@ -208,10 +171,12 @@
                 <div class='print-number-type' id='tipo' ></div>
                 <div class='print-number-turn' id='turno'></div>
             </div>
-            <div class='print-promotion centered'>
-                <div><b>******PROMOCIÓN DEL DÍA******</b></div>
-                <div><b>{{ promocion.promotion_message }}</b></div>
-            </div>
+            {% if config.imprimir_promocion %}
+                <div class='print-promotion centered'>
+                    <div><b>******PROMOCIÓN DEL DÍA******</b></div>
+                    <div><b>{{ promocion.promotion_message }}</b></div>
+                </div>
+            {% endif %}
             <div id="bcTarget" class='centered'></div>
         </div>
     </div>
@@ -226,21 +191,6 @@
             </button>
             <br />
         {% endfor %}
-        <!-- <button type="button" class="btn btn-default btn-lg btn-block btn-xlarge" onClick='onMessage(this)' value='obra_social'>
-            OBRA SOCIAL
-        </button>
-        <br />
-        <button type="button" class="btn btn-default btn-lg btn-block btn-xlarge" onClick='onMessage(this)' value='pami'>
-            PAMI
-        </button>
-        <br />
-        <button type="button" class="btn btn-default btn-lg btn-block btn-xlarge" onClick='onMessage(this)' value='perfumeria'>
-            PERFUMERIA
-        </button>
-        <br />
-        <button type="button" class="btn btn-default btn-lg btn-block btn-xlarge" onClick='onMessage(this)' value='particular'>
-            PARTICULAR
-        </button> -->
     </div>
 
     </body>

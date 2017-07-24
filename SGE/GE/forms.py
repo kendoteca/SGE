@@ -22,6 +22,7 @@ class Configurations(ModelForm):
             'promocion_aleatoria',
             'generar_alarma_con_cantidad',
             'email_destino',
-            'email'
+            'sonido_totem',
+            'visualizador_standard',
         ]
 

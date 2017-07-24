@@ -13,6 +13,7 @@ from django.db.models import Sum, Avg
 from .forms import SignUpForm, Configurations
 from GE.models import (
     AttentionType,
+    Configuration,
     InitialAttention,
     Promotion,
     Registers,
@@ -152,21 +153,26 @@ def main(request):
 def totem(request):
     tipo_atenciones = AttentionType.objects.all()
     promotion = Promotion.objects.get(promotion_selected=1)
+    config = Configuration.objects.all()[0]
     return render(
         request,
         'totem.html',
         {
             'tipo_atenciones': tipo_atenciones,
-            'promocion': promotion
+            'promocion': promotion,
+            'config': config
         }
     )
 
 
 def visualizador(request):
     tipo_atenciones = AttentionType.objects.all()
+
+    config = Configuration.objects.all()[0]
+
     return render(
         request,
-        'visualizador.html',
+        'visualizador2.html' if config.visualizador_standard else 'visualizador.html',
         {
             'tipo_atenciones': tipo_atenciones,
             'loop': range(1, 8)
