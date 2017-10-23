@@ -14,7 +14,6 @@
 
 
         function seleccionarPromocion() {
-            debugger
             var rate_value = 0
             var els = document.getElementsByName('promociones');
             els.forEach(function(tipo){
@@ -55,6 +54,29 @@
                 }
             );
         }
+
+        function eliminarPromocion() {
+            var rate_value = 0
+            var els = document.getElementsByName('promociones');
+            els.forEach(function(tipo){
+                if (tipo.checked) {
+                  rate_value = tipo.value;
+                }
+            });
+
+            $.post(
+                'http://'+location.host+'/api/eliminar_promocion/',
+                {
+                    id: rate_value
+                },
+                function(data, status){
+                    alert('Se Eliminó Correctamente la Promoción')
+                    location.reload();
+                }
+            );
+        }
+
+
 
 
     </script>
@@ -102,6 +124,7 @@
             </thead>
         </table>
         <button type="button" onClick='seleccionarPromocion()' style="margin-left: 20px; margin-top: 10px; margin-bottom: 10px;" class="btn btn-primary">Seleccionar Promoción</button>
+        <button type="button" onClick='eliminarPromocion()' style="margin-left: 20px; margin-top: 10px; margin-bottom: 10px;" class="btn btn-danger">Eliminar Promoción</button>
     </div>
     <br />
     <div class='container' style='background: white' id='tabla'>

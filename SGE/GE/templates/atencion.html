@@ -489,11 +489,20 @@
             return
         }
 
+        function handleBrowserCloseButton() {
+            debugger
+            return 'Browser close button clicked';
+        }
+
+        window.onbeforeunload = function () {
+            return "Are you sure";
+        };
+
      </script>
 
   </head>
 
-  <body>
+  <body onbeforeunload="return handleBrowserCloseButton();">
 
     <div id="myModal" class="modal">
         <!-- Modal content-->

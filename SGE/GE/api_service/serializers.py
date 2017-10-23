@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from GE.models import Registers, Persona, InitialAttention, AttentionType, Alerta, Promotion
+from GE.models import Registers, Persona, InitialAttention, AttentionType, Alerta, Promotion, Promociones_visualizador
 
 
 class RegistersSerializer(serializers.ModelSerializer):
@@ -45,6 +45,13 @@ class PromotionSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = Promotion
+        fields = '__all__'
+
+
+class PromocionesVisualizadorSerializers(serializers.ModelSerializer):
+
+    class Meta:
+        model = Promociones_visualizador
         fields = '__all__'
 
 

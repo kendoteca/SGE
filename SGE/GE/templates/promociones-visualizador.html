@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<head>
+    <!-- <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
+    <link rel="stylesheet" href="{% static "/jquery-ui.css" %}">
+    <script src="{% static "/jquery-1.12.4.js" %}"></script>
+    <script src="{% static "/jquery-ui.js" %}"></script>
+    <script type="text/javascript">
+        dict = {}; // used to get the values of the page
+
+        $(function() {
+            $("#datepicker").datepicker();
+            $("#datepicker").datepicker("option", "dateFormat", "yy-mm-dd");
+        } );
+
+        function agregarPromocion() {
+            var promocion = document.getElementById('mensaje_promocion_visualizador').value
+            $.post(
+                'http://'+ location.host +'/api/agregar_promociones_visualizador/',
+                {
+                    promocion: promocion
+                },
+                function(data, status){
+                    $('#result-table tr:last').after(
+                        '<tr><th><input type="radio" name="promociones" value="'+data.id_promociones_visualizador+'">  '+data.mensaje_promocion_visualizador+'</th></tr>'
+                    );
+
+                }
+            );
+        }
+
+        function eliminarPromocion() {
+            var rate_value = 0
+            var els = document.getElementsByName('promociones');
+            els.forEach(function(tipo){
+                if (tipo.checked) {
+                  rate_value = tipo.value;
+                }
+            });
+
+            $.post(
+                'http://'+location.host+'/api/eliminar_promocion_visualizador/',
+                {
+                    id: rate_value
+                },
+                function(data, status){
+                    alert('Se Eliminó Correctamente la Promoción')
+                    location.reload();
+                }
+            );
+        }
+
+
+
+
+    </script>
+
+    <style type="text/css">
+        .table{
+            font-size: 13px;
+        }
+        #filter button{
+          margin-bottom: 10px;
+        }
+        #filter th{
+          padding-bottom: 10px;
+        }
+    </style>
+
+</head>
+<body style='background: #546973;'>
+    <div class="container" style="background: white; border-radius: 10px; width: 500px; margin-top: 50px">
+        <h3>Promociones para mostrar en Visualizador:</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Agregar Promociones para mostrar en Visualizador:</th>
+                </tr>
+                <tr>
+                    <th><input type='text' id='mensaje_promocion_visualizador' name='mensaje_promocion_visualizador'></th>
+                    <th><button type="button" onClick='agregarPromocion()' style="margin-left: 20px" class="btn btn-primary">Agregar Promoción</button></th>
+                </tr>
+            </thead>
+        </table>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Seleccione una Promoción para eliminar:</th>
+                </tr>
+                <table id='result-table'>
+                    <thead>
+                    <tr/>
+                        {% for promocion in promociones %}
+                            <tr>
+                                <th><input type='radio' id='promo' name='promociones' value="{{ promocion.id_promociones_visualizador }}"> {{ promocion.mensaje_promocion_visualizador }}</th>
+                            </tr>
+                        {% endfor %}
+            </thead>
+        </table>
+        <button type="button" onClick='eliminarPromocion()' style="margin-left: 20px; margin-top: 10px; margin-bottom: 10px;" class="btn btn-danger">Eliminar Promoción</button>
+    </div>
+    <br />
+    <div class='container' style='background: white' id='tabla'>
+    </div>
+
+</body>
+
+
+
+{% endblock %}

@@ -10,6 +10,7 @@ from GE.models import (
     InitialAttention,
     Persona,
     Promotion,
+    Promociones_visualizador,
     Registers,
     SellPlace,
     Sucursal,
@@ -28,6 +29,7 @@ from GE.api_service.serializers import (
     InitialAttentionSerializers,
     PersonaSerializers,
     PromotionSerializers,
+    PromocionesVisualizadorSerializers,
     RegistersSerializer,
 )
 
@@ -442,9 +444,48 @@ def atenciones(request):
     return JSONResponse(serializer.data, status=201)
 
 
+# Promociones para ticket impreso
 def get_promociones(request):
     promociones = Promotion.objects.all()
     serializer = PromotionSerializers(promociones, many=True)
+
+    return JSONResponse(serializer.data, status=201)
+
+
+def delete_promociones(request):
+    promotion = Promotion.objects.filter(id_promotion=request.POST['id']).delete()
+
+    return JSONResponse(promotion, status=201)
+
+
+# Promociones para visualizar
+def get_promociones_visualizador(request):
+    promociones = Promociones_visualizador.objects.all()
+    serializer = PromocionesVisualizadorSerializers(promociones, many=True)
+
+    return JSONResponse(serializer.data, status=201)
+
+
+def delete_promociones_visualizador(request):
+    promotion = Promociones_visualizador.objects.filter(id_promociones_visualizador=request.POST['id']).delete()
+
+    return JSONResponse(promotion, status=201)
+
+@csrf_exempt
+def agregar_promociones_visualizador(request):
+    """
+    Crea promocion...
+    """
+    if request.method == 'POST':
+        try:
+            registro_guardado = Promociones_visualizador.objects.create(
+                mensaje_promocion_visualizador=request.POST['promocion']
+            )
+            serializer = PromocionesVisualizadorSerializers(registro_guardado)
+        except ValueError:
+            return JSONResponse('Error al cargar las Promociones', status=400)
+        except ObjectDoesNotExist:
+            return JSONResponse('El objeto no existe en Promociones', status=400)
 
     return JSONResponse(serializer.data, status=201)
 

@@ -27,6 +27,8 @@ class Configuration(models.Model):
     email_destino = models.CharField(max_length=50)
     sonido_totem = models.BooleanField()
     visualizador_standard = models.BooleanField(default=False)
+    tiempo_promociones_visualizador = models.IntegerField()
+    tiempo_imagenes_visualizador = models.IntegerField()
 
 
 class ConfiguracionesEstandar(models.Model):
@@ -43,6 +45,14 @@ class Promotion(models.Model):
 
     def __str__(self):
         return str(self.promotion_message)
+
+
+class Promociones_visualizador(models.Model):
+    id_promociones_visualizador = models.AutoField(primary_key=True)
+    mensaje_promocion_visualizador = models.CharField(max_length=100)
+
+    def __str__(self):
+        return str(self.mensaje_promocion_visualizador)
 
 
 class SellPlace(models.Model):
@@ -114,11 +124,11 @@ class Registers(models.Model):
 
     finish_total_attention = models.DateTimeField(blank=True, null=True)
 
-    duracion = models.DecimalField(default=0, decimal_places=2, max_digits=4)
+    duracion = models.DecimalField(default=0, decimal_places=2, max_digits=8)
 
-    duracion_atencion = models.DecimalField(default=0, decimal_places=2, max_digits=4)
+    duracion_atencion = models.DecimalField(default=0, decimal_places=2, max_digits=8)
 
-    tiempo_espera = models.DecimalField(default=0, decimal_places=2, max_digits=4)
+    tiempo_espera = models.DecimalField(default=0, decimal_places=2, max_digits=8)
 
     sellplace = models.ForeignKey(SellPlace)
 

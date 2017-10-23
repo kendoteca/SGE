@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'channels',
     'chat_engine.apps.DefaultConfig',
     'GE',
+    'require'
 ]
 
 # MIDDLEWARE = [
@@ -158,3 +159,10 @@ EMAIL_HOST_USER = 'redfarmaciassantaana@gmail.com'
 EMAIL_HOST_PASSWORD = 'farmaciasantaana'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+
+REQUIRE_BASE_URL = "js"
+REQUIRE_BUILD_PROFILE = None
+REQUIRE_JS = "require.js"
+REQUIRE_EXCLUDE = ("build.txt",)
+REQUIRE_ENVIRONMENT = "auto"

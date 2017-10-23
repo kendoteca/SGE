@@ -16,6 +16,10 @@ urlpatterns = [
     url(r'^get_promociones/$', views.get_promociones),
     url(r'^agregar_promociones/$', views.agregar_promociones),
     url(r'^seleccionar_promocion/$', views.seleccionar_promocion),
+    url(r'^eliminar_promocion/$', views.delete_promociones),
+    url(r'^get_promociones_visualizador/$', views.get_promociones_visualizador),
+    url(r'^agregar_promociones_visualizador/$', views.agregar_promociones_visualizador),
+    url(r'^eliminar_promocion_visualizador/$', views.delete_promociones_visualizador),
     url(r'^atenciones/$', views.atenciones),
     url(r'^usuarios/$', views.usuarios),
     url(r'^alertas/$', views.alertas)

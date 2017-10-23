@@ -16,6 +16,7 @@ from GE.models import (
     Configuration,
     InitialAttention,
     Promotion,
+    Promociones_visualizador,
     Registers,
 )
 from django.utils import timezone
@@ -169,12 +170,21 @@ def visualizador(request):
     tipo_atenciones = AttentionType.objects.all()
 
     config = Configuration.objects.all()[0]
-
+    mensajes_promociones = ''
+    lista_imagenes = []
+    if not config.visualizador_standard:
+        mensajes_promociones = Promociones_visualizador.objects.all()
+        import os
+        lista_imagenes = os.listdir('Imagenes_presentacion/')
     return render(
         request,
         'visualizador2.html' if config.visualizador_standard else 'visualizador.html',
         {
             'tipo_atenciones': tipo_atenciones,
+            'mensajes_promociones': mensajes_promociones,
+            'lista_imagenes': lista_imagenes,
+            'tiempo_promociones': config.tiempo_promociones_visualizador,
+            'tiempo_imagenes': config.tiempo_imagenes_visualizador,
             'loop': range(1, 8)
         }
     )
@@ -293,6 +303,17 @@ def promociones(request):
     return render(
         request,
         'promociones.html',
+        {
+            'promociones': promociones,
+        }
+    )
+
+
+def promociones_visualizador(request):
+    promociones = Promociones_visualizador.objects.all()
+    return render(
+        request,
+        'promociones-visualizador.html',
         {
             'promociones': promociones,
         }
