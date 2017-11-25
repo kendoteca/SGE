@@ -140,6 +140,8 @@
             {% endfor %}
         }
 
+        var configuracion = '-'
+
 		function send(e) {
 
             if (terminar) {
@@ -147,11 +149,13 @@
                 creaRegistro(e);
                 if (status != 'error') {
                     // start(e.value)
-                    $('#atender_'+e.value).replaceWith('<button type="button" id="atender_terminar_'+e.value+'" onclick="send(this)" value="'+e.value+'" class="btn btn-danger btn-sm">Terminar</button>')
-                    terminar = false;
-                    atencion_activa = true;
-                    tipo_atencion_activa = e.value;
-                    blockButtons(e.value)
+                    if (configuracion == 'bueno') {
+                        $('#atender_'+e.value).replaceWith('<button type="button" id="atender_terminar_'+e.value+'" onclick="send(this)" value="'+e.value+'" class="btn btn-danger btn-sm">Terminar</button>')
+                        terminar = false;
+                        atencion_activa = true;
+                        tipo_atencion_activa = e.value;
+                        blockButtons(e.value)
+                    }
 
                 }
             }
@@ -520,7 +524,6 @@
                 <button type="button" onclick="closeModal()" id='cancelar-atencion-prioritaria' class="btn btn-default">Cancelar</button>
             </div>
         </div>
-
     </div>
 
     <div id="pinModal" class="modal">
@@ -540,8 +543,8 @@
                 <button type="button" onclick="closePinModal()" id='cancelar-atencion-prioritaria' class="btn btn-default">Cancelar</button>
             </div>
         </div>
-
     </div>
+
     <div class="container">
       <div class="header clearfix">
         <nav>
