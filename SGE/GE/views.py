@@ -175,7 +175,7 @@ def visualizador(request):
     if not config.visualizador_standard:
         mensajes_promociones = Promociones_visualizador.objects.all()
         import os
-        lista_imagenes = os.listdir('Imagenes_presentacion/')
+        lista_imagenes = os.listdir('./static/Imagenes_presentacion/')
     return render(
         request,
         'visualizador2.html' if config.visualizador_standard else 'visualizador.html',
@@ -293,6 +293,7 @@ def personas(request):
 @login_required()
 def alertas(request):
     return render(request, 'alertas.html')
+
 
 def prueba(request):
     return render(request, 'prueba.html')

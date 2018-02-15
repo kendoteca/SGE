@@ -179,7 +179,6 @@ def crear_turno(request):
     """
     Crea turno cuando seleccionan una opcion en totem
     """
-
     if request.method == 'POST':
         attention = AttentionType.objects.get(name=request.POST['tipo_atencion'])
         try:
@@ -245,7 +244,6 @@ def crear_registro(request):
     """
     Crea registro de turnos...
     """
-
     if request.method == 'POST':
         att = AttentionType.objects.get(name=request.POST['tipo_atencion'])
         if request.POST['pin']:
@@ -377,13 +375,15 @@ def visualizador(request):
     """
     Número a llamar o a crear Registro
     """
-
-    att = AttentionType.objects.get(name=request.POST['tipo_atencion'])
-    hola = Registers.objects.filter(
-        attention_type=att,
-        priority_attention=False,
-        start_attention__gt=timezone.now().date()
-    )
+    try:
+        att = AttentionType.objects.get(name=request.POST['tipo_atencion'])
+        hola = Registers.objects.filter(
+            attention_type=att,
+            priority_attention=False,
+            start_attention__gt=timezone.now().date()
+        )
+    except Exception:
+        return JSONResponse('No hay números para el tipo de atención solicitado', status=201)
     number_to_be_attend = '',
     next_number = 0
 

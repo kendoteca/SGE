@@ -336,9 +336,9 @@
                 },
                 function(data, status) {
                     // start(state.value)
-                    $('#atender_'+state.value).replaceWith('<button type="button" id="atender_terminar_'+state.value+'" onclick="send(this)" value="'+state.value+'" class="btn btn-danger btn-sm">Terminar</button>')
+                    // $('#atender_'+state.value).replaceWith('<button type="button" id="atender_terminar_'+state.value+'" onclick="send(this)" value="'+state.value+'" class="btn btn-danger btn-sm">Terminar</button>')
                     terminar = false;
-                    blockButtons(state.value);
+                    // blockButtons(state.value);
                     registerId = data.id_register;
                     onMessage();
                 }
