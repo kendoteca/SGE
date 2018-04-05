@@ -61,6 +61,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'SistemaGestionEspera.urls'
@@ -135,12 +136,20 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATIC_URL = '/Users/povejero/sistema_gestion_de_espera/SGE/static/'
+# STATIC_URL = '/Users/povejero/sistema_gestion_de_espera/SGE/static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-    '/Users/povejero/sistema_gestion_de_espera/SGE/static/',
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, "static"),
+#     '/Users/povejero/sistema_gestion_de_espera/SGE/static/',
+# ]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
+
+# Extra places for collectstatic to find static files.
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
 
 # Redirect when login is correct.
 LOGIN_REDIRECT_URL = "/home"
