@@ -1,1 +1,1 @@
-web: gunicorn SGE.wsgi
+web: gunicorn SistemaGestionEspera.wsgi
