@@ -26,6 +26,9 @@
         $(function() {
             $("#datepicker").datepicker();
             $("#datepicker").datepicker("option", "dateFormat", "yy-mm-dd");
+
+            $("#datepicker1").datepicker();
+            $("#datepicker1").datepicker("option", "dateFormat", "yy-mm-dd");
         } );
 
         function getRegisters(data) {
@@ -144,6 +147,7 @@
             <thead>
                 <tr>
                     <th>Seleccione una Fecha <input type="text" id="datepicker"></th>
+                    <th>hasta <input type="text" id="datepicker1"></th>
                 </tr>
                 <tr>
                     <th>Usuario <select id='pin' name="usuario"></select></th>

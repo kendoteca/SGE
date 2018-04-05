@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^configurations/$', views.configurations, name="configurations"),
     url(r'^final/$', views.final, name="final"),
     url(r'^chat/$', views.chat, name='chat'),
+    url(r'^usuarios-admin/$', views.usuarios_admin, name='usuarios-admin'),
     url(r'^menu/$', views.menu, name='menu'),
     url(r'^registros/$', views.registros, name='registros'),
     url(r'^personas/$', views.personas, name='personas'),

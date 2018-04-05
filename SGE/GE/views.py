@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import os
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 
 from django.contrib.auth.decorators import login_required
@@ -161,7 +162,9 @@ def totem(request):
         {
             'tipo_atenciones': tipo_atenciones,
             'promocion': promotion,
-            'config': config
+            'config': config,
+            'tipo_sonido_totem': config.tipo_sonido_totem,
+            'sonido_totem': config.sonido_totem
         }
     )
 
@@ -174,7 +177,6 @@ def visualizador(request):
     lista_imagenes = []
     if not config.visualizador_standard:
         mensajes_promociones = Promociones_visualizador.objects.all()
-        import os
         lista_imagenes = os.listdir('./static/Imagenes_presentacion/')
     return render(
         request,
@@ -185,7 +187,8 @@ def visualizador(request):
             'lista_imagenes': lista_imagenes,
             'tiempo_promociones': config.tiempo_promociones_visualizador,
             'tiempo_imagenes': config.tiempo_imagenes_visualizador,
-            'loop': range(1, 8)
+            'loop': range(1, 8),
+            'tipo_sonido_visualizador': config.tipo_sonido_visualizador,
         }
     )
 
@@ -262,6 +265,9 @@ def signup(request):
             user.first_name = first_name
             user.last_name = last_name
 
+            if request.user.is_staff and request.POST['is_staff']:
+                user.is_staff = True
+
             # Save new user attributes
             user.save()
 
@@ -277,11 +283,42 @@ def signup(request):
 
 @login_required()
 def configurations(request):
-    form = Configurations()
+    data = {}
+    actual_configuration = Configuration.objects.all()[0]
+    if actual_configuration:
+        data = {
+            'imprimir_promocion': actual_configuration.imprimir_promocion if actual_configuration else '',
+            'promocion_aleatoria': actual_configuration.promocion_aleatoria if actual_configuration else '',
+            'generar_alarma_con_cantidad': actual_configuration.generar_alarma_con_cantidad if actual_configuration else '',
+            'email_destino': actual_configuration.email_destino if actual_configuration else '',
+            'sonido_totem': actual_configuration.sonido_totem if actual_configuration else '',
+            'tipo_sonido_totem': actual_configuration.tipo_sonido_totem if actual_configuration else '',
+            'tipo_sonido_visualizador': actual_configuration.tipo_sonido_visualizador if actual_configuration else '',
+            'visualizador_standard': actual_configuration.visualizador_standard if actual_configuration else '',
+        }
+    form = Configurations(
+        initial=data
+    )
 
     data = {
         'form': form,
     }
+
+    if request.method == 'POST':
+
+        actual_configuration.imprimir_promocion = True if request.POST.get('imprimir_promocion') else False
+        actual_configuration.promocion_aleatoria = True if request.POST.get('promocion_aleatoria') else False
+        actual_configuration.generar_alarma_con_cantidad = request.POST.get('generar_alarma_con_cantidad')
+        actual_configuration.email_destino = request.POST.get('email_destino')
+        actual_configuration.sonido_totem = True if request.POST.get('sonido_totem') else False
+        actual_configuration.tipo_sonido_totem = request.POST.get('tipo_sonido_totem')
+        actual_configuration.tipo_sonido_visualizador = request.POST.get('tipo_sonido_visualizador')
+        actual_configuration.visualizador_standard = True if request.POST.get('visualizador_standard') else False
+
+        actual_configuration.save()
+
+        return HttpResponseRedirect(reverse('configurations'))
+
     return render(request, 'configurations.html', data)
 
 
@@ -293,6 +330,17 @@ def personas(request):
 @login_required()
 def alertas(request):
     return render(request, 'alertas.html')
+
+
+@login_required()
+def usuarios_admin(request):
+    return render(
+        request,
+        'signup.html',
+        {
+            'is_staff': request.user.is_staff,
+        }
+    )
 
 
 def prueba(request):

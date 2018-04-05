@@ -33,7 +33,12 @@
                 <td>{{ form.last_name.label_tag }}</td>
                 <td>{{ form.last_name }}</td>
             </tr>
-
+            {% if is_staff %}
+                <tr>
+                    <td>{{ form.last_name.label_tag }}</td>
+                    <td>{{ form.last_name }}</td>
+                </tr>
+            {% endif %}
         </table>
 
         <input type="submit" value="login"/>
@@ -127,6 +132,9 @@
                 <form class="form-signin" method='POST' action="{% url 'signup' %}">
                     <input type="text" class="form-control" name='username' placeholder="Ingrese un nombre de Usuario" required autofocus>
                     <input type="password" class="form-control" name='password' placeholder="Ingrese una Contraseña" required>
+                    {% if is_staff %}
+                        <input type="checkbox" name='is_staff'> Privilegios de Administrador
+                    {% endif %}
                     <input type="text" class="form-control" name='email_address' placeholder="Email" required autofocus>
                     <input type="text" class="form-control" name='first_name' placeholder="Nombre" required autofocus>
                     <input type="text" class="form-control" name='last_name' placeholder="Apellido" required autofocus>

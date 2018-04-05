@@ -26,6 +26,9 @@
         $(function() {
             $("#datepicker").datepicker();
             $("#datepicker").datepicker("option", "dateFormat", "yy-mm-dd");
+
+            $("#datepicker1").datepicker();
+            $("#datepicker1").datepicker("option", "dateFormat", "yy-mm-dd");
         } );
 
         function getRegisters(data) {
@@ -34,7 +37,7 @@
                 'http://'+ location.host +'/api/registros/',
                 data,
                 function(data, status){
-                    var val = '<h3>Resultado de Busqueda:</h3>\
+                    var val = '<h3>Resultado de Busqueda:'+ data.length+' atenciones</h3>\
                     <table class="table" id="result-table">\
                         <thead>\
                             <tr>\
@@ -56,7 +59,7 @@
                     $('#tabla').html(val)
 
                     $.each(data, function (i, item) {
-                        $('#result-table tr:last').after('<tr><th scope="row">'+item.id_register+'</th><td>'+item.pin+', '+item.name+'</td><td>'+new Date(item.created).toLocaleString()+'</td><td>'+new Date(item.start_attention).toLocaleString()+'</td><td>'+new Date(item.finish_attention).toLocaleString()+'</td><td>'+item.finish_total_attention+'</td><td>'+item.tiempo_espera+'</td><td>'+item.duracion_atencion+'</td><td>'+item.duracion+'</td></tr>');
+                        $('#result-table tr:last').after('<tr><th scope="row">'+item.id_register+'</th><td>'+item.pin+', '+item.name+'</td><td>'+new Date(item.created).toLocaleString()+'</td><td>'+new Date(item.start_attention).toLocaleString()+'</td><td>'+new Date(item.finish_attention).toLocaleString()+'</td><td>'+(item.finish_total_attention/60).toFixed(2)+'</td><td>'+(item.tiempo_espera/60).toFixed(2)+'</td><td>'+(item.duracion_atencion/60).toFixed(2)+'</td><td>'+(item.duracion/60).toFixed(2)+'</td></tr>');
                     });
 
                 }
@@ -98,6 +101,9 @@
         function buscar() {
             if ($('#datepicker').val() != "") {
                 dict['datepicker'] = $('#datepicker').val()
+            }
+            if ($('#datepicker1').val() != "") {
+                dict['datepicker1'] = $('#datepicker1').val()
             }
             if ($('#tipo_atencion').val() != "") {
                 dict['tipo_atencion'] = $('#tipo_atencion').val()
@@ -142,6 +148,7 @@
             <thead>
                 <tr>
                     <th>Seleccione una Fecha <input type="text" id="datepicker"></th>
+                    <th> hasta <input type="text" id="datepicker1"></th>
                 </tr>
                 <tr>
                     <th>Tipo de Atención <select id='tipo_atencion' name="tipo_atencion"></select></th>

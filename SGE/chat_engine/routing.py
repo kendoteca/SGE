@@ -8,7 +8,6 @@ from .engine import get_engine
 router = get_router()
 engine = get_engine()
 
-
 routing = [
     route("websocket.receive", channel_session(router.handle_receive)),
     route("websocket.disconnect", channel_session(router.handle_disconnect)),

@@ -5,18 +5,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Chat powered by Channels</title>
-    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+    <script src="{% static "/Visualizador/jquery-2.2.3.min.js" %}"></script>
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static "/Visualizador/bootstrap.min.css" %}" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
     <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static "/Visualizador/bootstrap-theme.min.css" %}" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
     <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-    <link href='https://fonts.googleapis.com/css?family=Roboto&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+    <script src="{% static "/Visualizador/bootstrap.min.js" %}" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link href="{% static "/Visualizador/google-font-css.css" %}" rel='stylesheet' type='text/css'>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.4.4/babel.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.4.4/babel.min.js"></script> -->
 
     <!-- <script type="text/javascript" src="{% static "/jquery-barcode.js" %}"></script>  -->
 
@@ -24,11 +24,11 @@
     <script src="{% static "/slick/slick.min.js" %}"></script>
 
     <script>
-        $(function(){
-            eval(Babel.transform($('script[type="text/babel"]').text(), {
-             presets: ['es2015', 'react', 'stage-0']
-            }).code)
-        })
+        // $(function(){
+        //     eval(Babel.transform($('script[type="text/babel"]').text(), {
+        //      presets: ['es2015', 'react', 'stage-0']
+        //     }).code)
+        // })
 
         function playAudio() {
             var x = document.getElementById("timbre");
@@ -141,7 +141,7 @@
      </script>
 
     <audio id="timbre">
-        <source src="{% static "/BELL1.mp3" %}" type="audio/mpeg">
+        <source src="{% static tipo_sonido_visualizador %}" type="audio/mpeg">
     </audio>
 
     <style type="text/css">

@@ -115,7 +115,13 @@ def registros(request):
         if 'pin' in request.POST and request.POST['pin'] != '':
             values['pin_id'] = request.POST['pin']
         if 'datepicker' in request.POST and request.POST['datepicker'] != '':
-            values['start_attention__contains'] = request.POST['datepicker']
+            if request.POST.get('datepicker') and request.POST.get('datepicker1'):
+                values['start_attention__range'] = (
+                    request.POST.get('datepicker'),
+                    request.POST.get('datepicker1')
+                )
+            else:
+                values['start_attention__contains'] = request.POST['datepicker']
         if 'tipo_atencion' in request.POST and request.POST['tipo_atencion'] != 'todos':
             values['attention_type'] = request.POST['tipo_atencion']
         if 'duracion' in request.POST and request.POST['duracion'] != '':

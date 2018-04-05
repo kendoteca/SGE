@@ -9,7 +9,7 @@ from channels import Group
 
 from . import messages
 from . import conf
-from GE.models import InitialAttention, Alerta, AttentionType, Registers, SellPlace, Sucursal, Configuration, Persona
+# from GE.models import InitialAttention, Alerta, AttentionType, Registers, SellPlace, Sucursal, Configuration, Persona
 
 
 @channel_session
