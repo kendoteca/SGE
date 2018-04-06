@@ -1,4 +1,4 @@
-#!/Users/povejero/sistema_gestion_de_espera/env/bin/python3
+#!/Users/povejero/sistema_gestion_de_espera/SGE/env/bin/python3
 from django.core import management
 
 if __name__ == "__main__":

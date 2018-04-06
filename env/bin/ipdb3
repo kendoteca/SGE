@@ -1,4 +1,4 @@
-#!/Users/povejero/sistema_gestion_de_espera/env/bin/python3
+#!/Users/povejero/sistema_gestion_de_espera/SGE/env/bin/python3
 # EASY-INSTALL-ENTRY-SCRIPT: 'ipdb==0.10.3','console_scripts','ipdb3'
 __requires__ = 'ipdb==0.10.3'
 import re

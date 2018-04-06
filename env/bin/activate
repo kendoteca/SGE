@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/Users/povejero/sistema_gestion_de_espera/env"
+VIRTUAL_ENV="/Users/povejero/sistema_gestion_de_espera/SGE/env"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
