@@ -24,9 +24,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '547wsja%6()8$_9827@_6at4$(rosw2yehh_@m0m9^7k716zch'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost', '0.0.0.0', '127.0.0.1', '.herokuapp.com']
 
 
 # Application definition
@@ -79,17 +79,23 @@ WSGI_APPLICATION = 'SistemaGestionEspera.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',# Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+#         'NAME': 'SGE',                      # Or path to database file if using sqlite3.
+#         'USER': 'root',                      # Not used with sqlite3.
+#         'PASSWORD': '',                  # Not used with sqlite3.
+#         'HOST': '127.0.0.1',                      # Set to empty string for localhost. Not used with sqlite3.
+#         'PORT': '3306',                      # Set to empty string for default. Not used with sqlite3.
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',# Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'SGE',                      # Or path to database file if using sqlite3.
-        'USER': 'root',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '127.0.0.1',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '3306',                      # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
