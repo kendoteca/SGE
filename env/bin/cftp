@@ -1,4 +1,4 @@
-#!/Users/povejero/sistema_gestion_de_espera/SGE/env/bin/python3
+#!/Users/povejero/sistema_gestion_de_espera/env/bin/python3
 # EASY-INSTALL-ENTRY-SCRIPT: 'Twisted==17.1.0','console_scripts','cftp'
 __requires__ = 'Twisted==17.1.0'
 import re

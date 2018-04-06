@@ -13,6 +13,7 @@ Django==1.11.1
 django-extra-views==0.9.0
 django-require==1.0.11
 djangorestframework==3.6.2
+gunicorn==19.7.1
 idna==2.5
 incremental==16.10.1
 ipdb==0.10.3
@@ -39,6 +40,7 @@ txaio==2.7.1
 urllib3==1.21.1
 uWSGI==2.0.17
 wcwidth==0.1.7
+whitenoise==3.3.1
 zope.component==4.4.0
 zope.deprecation==4.3.0
 zope.event==4.3.0
