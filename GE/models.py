@@ -7,7 +7,7 @@ from django.utils import timezone
 
 
 class Persona(models.Model):
-    id_persona = models.AutoField(primary_key=True)
+    id_persona = models.AutoField(primary_key=True, unique=true)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     email = models.CharField(max_length=50)
@@ -41,7 +41,7 @@ class ConfiguracionesEstandar(models.Model):
 
 
 class Promotion(models.Model):
-    id_promotion = models.AutoField(primary_key=True)
+    id_promotion = models.AutoField(primary_key=True, unique=true)
     promotion_message = models.CharField(max_length=50)
     promotion_selected = models.BooleanField(default=False)
 
@@ -50,7 +50,7 @@ class Promotion(models.Model):
 
 
 class Promociones_visualizador(models.Model):
-    id_promociones_visualizador = models.AutoField(primary_key=True)
+    id_promociones_visualizador = models.AutoField(primary_key=True, unique=true)
     mensaje_promocion_visualizador = models.CharField(max_length=100)
 
     def __str__(self):
@@ -58,7 +58,7 @@ class Promociones_visualizador(models.Model):
 
 
 class SellPlace(models.Model):
-    id_sellplace = models.AutoField(primary_key=True)
+    id_sellplace = models.AutoField(primary_key=True, unique=true)
     name = models.CharField(max_length=50)
     people_attended = models.IntegerField()
 
@@ -67,7 +67,7 @@ class SellPlace(models.Model):
 
 
 class Sucursal(models.Model):
-    id_sucursal = models.AutoField(primary_key=True)
+    id_sucursal = models.AutoField(primary_key=True, unique=true)
     sucursal_name = models.CharField(max_length=50)
     location = models.CharField(max_length=50)
 
@@ -76,7 +76,7 @@ class Sucursal(models.Model):
 
 
 class AttentionType(models.Model):
-    id_attention_type = models.AutoField(primary_key=True)
+    id_attention_type = models.AutoField(primary_key=True, unique=true)
     name = models.CharField(max_length=50)
     label = models.CharField(max_length=50)
 
@@ -85,7 +85,7 @@ class AttentionType(models.Model):
 
 
 class Alerta(models.Model):
-    id_alerta = models.AutoField(primary_key=True)
+    id_alerta = models.AutoField(primary_key=True, unique=true)
     starting_alert = models.DateTimeField(
         default=timezone.now
     )
@@ -102,7 +102,7 @@ class Alerta(models.Model):
 
 
 class InitialAttention(models.Model):
-    id_initial_attention = models.AutoField(primary_key=True)
+    id_initial_attention = models.AutoField(primary_key=True, unique=true)
     attention_number = models.IntegerField()
     attention_type = models.ForeignKey(AttentionType)
     created = models.DateTimeField(default=timezone.now)
@@ -112,7 +112,7 @@ class InitialAttention(models.Model):
 
 
 class Registers(models.Model):
-    id_register = models.AutoField(primary_key=True)
+    id_register = models.AutoField(primary_key=True, unique=true)
     pin = models.ForeignKey(Persona)
     priority_attention = models.BooleanField()
     attention_number = models.ForeignKey(InitialAttention)
