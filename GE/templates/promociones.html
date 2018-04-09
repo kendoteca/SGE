@@ -17,7 +17,7 @@
             var rate_value = 0
             var els = document.getElementsByName('promociones');
             els.forEach(function(tipo){
-                debugger
+
                 if (tipo.checked) {
                   rate_value = tipo.value;
                 }
@@ -29,7 +29,7 @@
                     value: rate_value
                 },
                 function(data, status){
-                    debugger
+
                 }
             );
         }

@@ -97,7 +97,6 @@
             vis = vis + minuti + ":";
             if(secondi < 10) vis = vis + "0";
             vis = vis + secondi + ":" + decimi;
-            debugger
             document.getElementById("contador-"+value).innerHTML = vis;
         }
         function stop_timmer() {
@@ -173,7 +172,7 @@
 
         function blockButtons(value) {
             atenciones.forEach(function(tipo) {
-                debugger
+
                 if (value == tipo) {
                     document.getElementById("atencion_"+tipo).disabled = true;
                 }
@@ -291,7 +290,6 @@
         }
 
         function creaRegistro(e) {
-            debugger
             $.post(
                 'http://'+ location.host +'/api/crear_registro/',
                 {
@@ -375,7 +373,6 @@
 
         function showPinModal(values) {
             onMessage()
-            debugger
             document.getElementById("pin_number").focus();
             document.getElementById("numero_prioritario").focus();
 
@@ -419,7 +416,7 @@
                 .then(function(response) {
                     isPinGood=response.ok
                     pinNumber = pin_number
-                    debugger
+
                     if (state.id.indexOf('atencion') != 0 && isPinGood) {
                         closePinModal();
                     }
@@ -494,7 +491,6 @@
         }
 
         function handleBrowserCloseButton() {
-            debugger
             return 'Browser close button clicked';
         }
 

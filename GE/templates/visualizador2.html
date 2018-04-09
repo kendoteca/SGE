@@ -35,7 +35,7 @@
         }
 
         function playVid() {
-            debugger
+
             var vid = document.getElementById("myVideo");
             vid.play();
         }
@@ -85,7 +85,7 @@
             let socket = new WebSocket("ws://" + location.host + "/chat/main");
             this.socket = socket;
             socket.onmessage = (e) => {
-                debugger
+
                 modal(e)
             }
             socket.onopen = () => {
@@ -97,7 +97,7 @@
         }
         connect();
         $(window).load(function() {
-            debugger
+
             playVid();
         });
      </script>
