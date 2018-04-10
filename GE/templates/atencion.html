@@ -213,7 +213,7 @@
 			let username = 'atencion'
             localStorage.username = username;
 
-            let socket = new WebSocket("ws://" + location.host + "/chat/main");
+            let socket = new WebSocket("wss://" + location.host + "/chat/main");
             this.socket = socket;
             socket.onmessage = (e) => {
                 var data=JSON.parse(e.data).text.split(',')
