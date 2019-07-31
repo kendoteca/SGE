@@ -172,23 +172,31 @@ def totem(request):
 def visualizador(request):
     tipo_atenciones = AttentionType.objects.all()
 
-    config = Configuration.objects.all()[0]
+    config = Configuration.objects.all()
     mensajes_promociones = ''
     lista_imagenes = []
-    if not config.visualizador_standard:
+    if not config or not config.visualizador_standard:
         mensajes_promociones = Promociones_visualizador.objects.all()
         lista_imagenes = os.listdir('./static/Imagenes_presentacion/')
+        tiempo_promociones_visualizador = 1000
+        tiempo_imagenes_visualizador = 1000
+        tipo_sonido_visualizador = ''
+    else:
+        tiempo_promociones_visualizador = config[0].tiempo_promociones_visualizador
+        tiempo_imagenes_visualizador = config[0].tiempo_imagenes_visualizador
+        tipo_sonido_visualizador = config[0].tipo_sonido_visualizador
+
     return render(
         request,
-        'visualizador2.html' if config.visualizador_standard else 'visualizador.html',
+        'visualizador2.html' if config and config[0].visualizador_standard else 'visualizador.html',
         {
             'tipo_atenciones': tipo_atenciones,
             'mensajes_promociones': mensajes_promociones,
             'lista_imagenes': lista_imagenes,
-            'tiempo_promociones': config.tiempo_promociones_visualizador,
-            'tiempo_imagenes': config.tiempo_imagenes_visualizador,
+            'tiempo_promociones': tiempo_promociones_visualizador,
+            'tiempo_imagenes': tiempo_imagenes_visualizador,
             'loop': range(1, 8),
-            'tipo_sonido_visualizador': config.tipo_sonido_visualizador,
+            'tipo_sonido_visualizador': tipo_sonido_visualizador,
         }
     )
 
