@@ -223,9 +223,9 @@ def login(request):
                 from django.contrib.auth import authenticate, login
                 autenticated_user = authenticate(username=user.username, password=request.POST['password'])
                 login(request, autenticated_user)
-                if 'visualizador' in user.username:
+                if 'visualizador' in user.username.lower():
                     return HttpResponseRedirect(reverse('visualizador'))
-                elif 'puesto' in user.username:
+                elif 'puesto' in user.username.lower():
                     return HttpResponseRedirect(reverse('home'))
 
         except Exception:
