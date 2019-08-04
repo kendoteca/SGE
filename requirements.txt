@@ -41,7 +41,7 @@ six==1.10.0
 traitlets==4.3.2
 Twisted==17.1.0
 txaio==2.7.1
-urllib3==1.21.1
+urllib3==1.24.2
 uWSGI==2.0.17
 wcwidth==0.1.7
 whitenoise==3.3.1
