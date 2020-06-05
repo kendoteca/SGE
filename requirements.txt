@@ -10,7 +10,7 @@ constantly==15.1.0
 daphne==1.2.0
 decorator==4.0.11
 dj-database-url==0.5.0
-Django==1.11.1
+Django==1.11.29
 django-extra-views==0.9.0
 django-heroku==0.3.1
 django-require==1.0.11
