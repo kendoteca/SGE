@@ -39,7 +39,7 @@ requirements==0.1
 simplegeneric==0.8.1
 six==1.10.0
 traitlets==4.3.2
-Twisted==17.1.0
+Twisted==22.4.0
 txaio==2.7.1
 urllib3==1.21.1
 uWSGI==2.0.17
